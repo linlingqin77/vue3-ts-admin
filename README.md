@@ -1,46 +1,43 @@
-# vue3-ts-cms
+<h1>vue-pure-admin精简版（非国际化版本）</h1>
 
-This template should help get you started developing with Vue 3 in Vite.
+[![license](https://img.shields.io/github/license/pure-admin/vue-pure-admin.svg)](LICENSE)
 
-## Recommended IDE Setup
+**中文** | [English](./README.en-US.md)
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur) + [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin).
+## 介绍
 
-## Type Support for `.vue` Imports in TS
+精简版是基于 [vue-pure-admin](https://github.com/pure-admin/vue-pure-admin) 提炼出的架子，包含主体功能，更适合实际项目开发，打包后的大小在全局引入 [element-plus](https://element-plus.org) 的情况下仍然低于 `2.3MB`，并且会永久同步完整版的代码。开启 `brotli` 压缩和 `cdn` 替换本地库模式后，打包大小低于 `350kb`
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin) to make the TypeScript language service aware of `.vue` types.
+## 版本选择
 
-If the standalone TypeScript plugin doesn't feel fast enough to you, Volar has also implemented a [Take Over Mode](https://github.com/johnsoncodehk/volar/discussions/471#discussioncomment-1361669) that is more performant. You can enable it by the following steps:
+当前是非国际化版本，如果您需要国际化版本 [请点击](https://github.com/pure-admin/pure-admin-thin/tree/i18n)
 
-1. Disable the built-in TypeScript Extension
-    1) Run `Extensions: Show Built-in Extensions` from VSCode's command palette
-    2) Find `TypeScript and JavaScript Language Features`, right click and select `Disable (Workspace)`
-2. Reload the VSCode window by running `Developer: Reload Window` from the command palette.
+## 配套视频
 
-## Customize configuration
+[点我查看 UI 设计](https://www.bilibili.com/video/BV17g411T7rq)  
+[点我查看快速开发教程](https://www.bilibili.com/video/BV1kg411v7QT)
 
-See [Vite Configuration Reference](https://vitejs.dev/config/).
+## 配套保姆级文档
 
-## Project Setup
+[点我查看 vue-pure-admin 文档](https://pure-admin.github.io/pure-admin-doc)  
+[点我查看 @pureadmin/utils 文档](https://pure-admin-utils.netlify.app)
 
-```sh
-npm install
-```
+## 优质服务、软件外包、赞助支持
 
-### Compile and Hot-Reload for Development
+[点我查看详情](https://pure-admin.github.io/pure-admin-doc/pages/service/)
 
-```sh
-npm run dev
-```
+## 预览
 
-### Type-Check, Compile and Minify for Production
+[查看预览](https://pure-admin-thin.netlify.app/#/login)
 
-```sh
-npm run build
-```
+## 维护者
 
-### Lint with [ESLint](https://eslint.org/)
+[xiaoxian521](https://github.com/xiaoxian521)
 
-```sh
-npm run lint
-```
+## ⚠️ 注意
+
+精简版不接受任何 `issues` 和 `pr`，如果有问题请到完整版 [issues](https://github.com/pure-admin/vue-pure-admin/issues/new/choose) 去提，谢谢！
+
+## 许可证
+
+[MIT © 2020-present, pure-admin](./LICENSE)
