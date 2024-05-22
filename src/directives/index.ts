@@ -1,5 +1,7 @@
-export * from "./auth";
-export * from "./copy";
-export * from "./longpress";
-export * from "./optimize";
-export * from "./ripple";
+import { type App } from "vue"
+import { permission } from "./permission"
+
+/** 挂载自定义指令 */
+export function loadDirectives(app: App) {
+  app.directive("permission", permission)
+}

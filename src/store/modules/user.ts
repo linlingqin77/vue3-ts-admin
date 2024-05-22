@@ -1,102 +1,69 @@
-import { defineStore } from "pinia";
-import {
-  type userType,
-  store,
-  router,
-  resetRouter,
-  routerArrays,
-  storageLocal
-} from "../utils";
-import {
-  type UserResult,
-  type RefreshTokenResult,
-  getLogin,
-  refreshTokenApi
-} from "@/api/user";
-import { useMultiTagsStoreHook } from "./multiTags";
-import { type DataInfo, setToken, removeToken, userKey } from "@/utils/auth";
+import { ref } from "vue"
+import store from "@/store"
+import { defineStore } from "pinia"
+import { useTagsViewStore } from "./tags-view"
+import { useSettingsStore } from "./settings"
+import { getToken, removeToken, setToken } from "@/utils/cache/cookies"
+import { resetRouter } from "@/router"
+import { loginApi, getUserInfoApi } from "@/api/login"
+import { type LoginRequestData } from "@/api/login/types/login"
+import routeSettings from "@/config/route"
 
-export const useUserStore = defineStore({
-  id: "pure-user",
-  state: (): userType => ({
-    // 头像
-    avatar: storageLocal().getItem<DataInfo<number>>(userKey)?.avatar ?? "",
-    // 用户名
-    username: storageLocal().getItem<DataInfo<number>>(userKey)?.username ?? "",
-    // 昵称
-    nickname: storageLocal().getItem<DataInfo<number>>(userKey)?.nickname ?? "",
-    // 页面级别权限
-    roles: storageLocal().getItem<DataInfo<number>>(userKey)?.roles ?? [],
-    // 是否勾选了登录页的免登录
-    isRemembered: false,
-    // 登录页的免登录存储几天，默认7天
-    loginDay: 7
-  }),
-  actions: {
-    /** 存储头像 */
-    SET_AVATAR(avatar: string) {
-      this.avatar = avatar;
-    },
-    /** 存储用户名 */
-    SET_USERNAME(username: string) {
-      this.username = username;
-    },
-    /** 存储昵称 */
-    SET_NICKNAME(nickname: string) {
-      this.nickname = nickname;
-    },
-    /** 存储角色 */
-    SET_ROLES(roles: Array<string>) {
-      this.roles = roles;
-    },
-    /** 存储是否勾选了登录页的免登录 */
-    SET_ISREMEMBERED(bool: boolean) {
-      this.isRemembered = bool;
-    },
-    /** 设置登录页的免登录存储几天 */
-    SET_LOGINDAY(value: number) {
-      this.loginDay = Number(value);
-    },
-    /** 登入 */
-    async loginByUsername(data) {
-      return new Promise<UserResult>((resolve, reject) => {
-        getLogin(data)
-          .then(data => {
-            if (data?.success) setToken(data.data);
-            resolve(data);
-          })
-          .catch(error => {
-            reject(error);
-          });
-      });
-    },
-    /** 前端登出（不调用接口） */
-    logOut() {
-      this.username = "";
-      this.roles = [];
-      removeToken();
-      useMultiTagsStoreHook().handleTags("equal", [...routerArrays]);
-      resetRouter();
-      router.push("/login");
-    },
-    /** 刷新`token` */
-    async handRefreshToken(data) {
-      return new Promise<RefreshTokenResult>((resolve, reject) => {
-        refreshTokenApi(data)
-          .then(data => {
-            if (data) {
-              setToken(data.data);
-              resolve(data);
-            }
-          })
-          .catch(error => {
-            reject(error);
-          });
-      });
+export const useUserStore = defineStore("user", () => {
+  const token = ref<string>(getToken() || "")
+  const roles = ref<string[]>([])
+  const username = ref<string>("")
+
+  const tagsViewStore = useTagsViewStore()
+  const settingsStore = useSettingsStore()
+
+  /** 登录 */
+  const login = async ({ username, password, code }: LoginRequestData) => {
+    const { data } = await loginApi({ username, password, code })
+    setToken(data.token)
+    token.value = data.token
+  }
+  /** 获取用户详情 */
+  const getInfo = async () => {
+    const { data } = await getUserInfoApi()
+    username.value = data.username
+    // 验证返回的 roles 是否为一个非空数组，否则塞入一个没有任何作用的默认角色，防止路由守卫逻辑进入无限循环
+    roles.value = data.roles?.length > 0 ? data.roles : routeSettings.defaultRoles
+  }
+  /** 模拟角色变化 */
+  const changeRoles = async (role: string) => {
+    const newToken = "token-" + role
+    token.value = newToken
+    setToken(newToken)
+    // 用刷新页面代替重新登录
+    window.location.reload()
+  }
+  /** 登出 */
+  const logout = () => {
+    removeToken()
+    token.value = ""
+    roles.value = []
+    resetRouter()
+    _resetTagsView()
+  }
+  /** 重置 Token */
+  const resetToken = () => {
+    removeToken()
+    token.value = ""
+    roles.value = []
+  }
+  /** 重置 Visited Views 和 Cached Views */
+  const _resetTagsView = () => {
+    if (!settingsStore.cacheTagsView) {
+      tagsViewStore.delAllVisitedViews()
+      tagsViewStore.delAllCachedViews()
     }
   }
-});
 
+  return { token, roles, username, login, getInfo, changeRoles, logout, resetToken }
+})
+
+/** 在 setup 外使用 */
 export function useUserStoreHook() {
-  return useUserStore(store);
+  return useUserStore(store)
 }

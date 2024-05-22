@@ -1,75 +1,56 @@
-import { defineStore } from "pinia";
-import {
-  type cacheType,
-  store,
-  debounce,
-  ascending,
-  getKeyList,
-  filterTree,
-  constantMenus,
-  filterNoPermissionTree,
-  formatFlatteningRoutes
-} from "../utils";
-import { useMultiTagsStoreHook } from "./multiTags";
+import { ref } from "vue"
+import store from "@/store"
+import { defineStore } from "pinia"
+import { type RouteRecordRaw } from "vue-router"
+import { constantRoutes, dynamicRoutes } from "@/router"
+import { flatMultiLevelRoutes } from "@/router/helper"
+import routeSettings from "@/config/route"
 
-export const usePermissionStore = defineStore({
-  id: "pure-permission",
-  state: () => ({
-    // 静态路由生成的菜单
-    constantMenus,
-    // 整体路由生成的菜单（静态、动态）
-    wholeMenus: [],
-    // 整体路由（一维数组格式）
-    flatteningRoutes: [],
-    // 缓存页面keepAlive
-    cachePageList: []
-  }),
-  actions: {
-    /** 组装整体路由生成的菜单 */
-    handleWholeMenus(routes: any[]) {
-      this.wholeMenus = filterNoPermissionTree(
-        filterTree(ascending(this.constantMenus.concat(routes)))
-      );
-      this.flatteningRoutes = formatFlatteningRoutes(
-        this.constantMenus.concat(routes)
-      );
-    },
-    cacheOperate({ mode, name }: cacheType) {
-      const delIndex = this.cachePageList.findIndex(v => v === name);
-      switch (mode) {
-        case "refresh":
-          this.cachePageList = this.cachePageList.filter(v => v !== name);
-          break;
-        case "add":
-          this.cachePageList.push(name);
-          break;
-        case "delete":
-          delIndex !== -1 && this.cachePageList.splice(delIndex, 1);
-          break;
+const hasPermission = (roles: string[], route: RouteRecordRaw) => {
+  const routeRoles = route.meta?.roles
+  return routeRoles ? roles.some((role) => routeRoles.includes(role)) : true
+}
+
+const filterDynamicRoutes = (routes: RouteRecordRaw[], roles: string[]) => {
+  const res: RouteRecordRaw[] = []
+  routes.forEach((route) => {
+    const tempRoute = { ...route }
+    if (hasPermission(roles, tempRoute)) {
+      if (tempRoute.children) {
+        tempRoute.children = filterDynamicRoutes(tempRoute.children, roles)
       }
-      /** 监听缓存页面是否存在于标签页，不存在则删除 */
-      debounce(() => {
-        let cacheLength = this.cachePageList.length;
-        const nameList = getKeyList(useMultiTagsStoreHook().multiTags, "name");
-        while (cacheLength > 0) {
-          nameList.findIndex(v => v === this.cachePageList[cacheLength - 1]) ===
-            -1 &&
-            this.cachePageList.splice(
-              this.cachePageList.indexOf(this.cachePageList[cacheLength - 1]),
-              1
-            );
-          cacheLength--;
-        }
-      })();
-    },
-    /** 清空缓存页面 */
-    clearAllCachePage() {
-      this.wholeMenus = [];
-      this.cachePageList = [];
+      res.push(tempRoute)
     }
-  }
-});
+  })
+  return res
+}
 
+export const usePermissionStore = defineStore("permission", () => {
+  /** 可访问的路由 */
+  const routes = ref<RouteRecordRaw[]>([])
+  /** 有访问权限的动态路由 */
+  const addRoutes = ref<RouteRecordRaw[]>([])
+
+  /** 根据角色生成可访问的 Routes（可访问的路由 = 常驻路由 + 有访问权限的动态路由） */
+  const setRoutes = (roles: string[]) => {
+    const accessedRoutes = filterDynamicRoutes(dynamicRoutes, roles)
+    _set(accessedRoutes)
+  }
+
+  /** 所有路由 = 所有常驻路由 + 所有动态路由 */
+  const setAllRoutes = () => {
+    _set(dynamicRoutes)
+  }
+
+  const _set = (accessedRoutes: RouteRecordRaw[]) => {
+    routes.value = constantRoutes.concat(accessedRoutes)
+    addRoutes.value = routeSettings.thirdLevelRouteCache ? flatMultiLevelRoutes(accessedRoutes) : accessedRoutes
+  }
+
+  return { routes, addRoutes, setRoutes, setAllRoutes }
+})
+
+/** 在 setup 外使用 */
 export function usePermissionStoreHook() {
-  return usePermissionStore(store);
+  return usePermissionStore(store)
 }

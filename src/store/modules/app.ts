@@ -1,89 +1,47 @@
-import { defineStore } from "pinia";
-import {
-  type appType,
-  store,
-  getConfig,
-  storageLocal,
-  deviceDetection,
-  responsiveStorageNameSpace
-} from "../utils";
+import { reactive, ref, watch } from "vue"
+import { defineStore } from "pinia"
+import { getSidebarStatus, setSidebarStatus } from "@/utils/cache/local-storage"
+import { DeviceEnum, SIDEBAR_OPENED, SIDEBAR_CLOSED } from "@/constants/app-key"
 
-export const useAppStore = defineStore({
-  id: "pure-app",
-  state: (): appType => ({
-    sidebar: {
-      opened:
-        storageLocal().getItem<StorageConfigs>(
-          `${responsiveStorageNameSpace()}layout`
-        )?.sidebarStatus ?? getConfig().SidebarStatus,
-      withoutAnimation: false,
-      isClickCollapse: false
-    },
-    // 这里的layout用于监听容器拖拉后恢复对应的导航模式
-    layout:
-      storageLocal().getItem<StorageConfigs>(
-        `${responsiveStorageNameSpace()}layout`
-      )?.layout ?? getConfig().Layout,
-    device: deviceDetection() ? "mobile" : "desktop",
-    // 浏览器窗口的可视区域大小
-    viewportSize: {
-      width: document.documentElement.clientWidth,
-      height: document.documentElement.clientHeight
-    }
-  }),
-  getters: {
-    getSidebarStatus(state) {
-      return state.sidebar.opened;
-    },
-    getDevice(state) {
-      return state.device;
-    },
-    getViewportWidth(state) {
-      return state.viewportSize.width;
-    },
-    getViewportHeight(state) {
-      return state.viewportSize.height;
-    }
-  },
-  actions: {
-    TOGGLE_SIDEBAR(opened?: boolean, resize?: string) {
-      const layout = storageLocal().getItem<StorageConfigs>(
-        `${responsiveStorageNameSpace()}layout`
-      );
-      if (opened && resize) {
-        this.sidebar.withoutAnimation = true;
-        this.sidebar.opened = true;
-        layout.sidebarStatus = true;
-      } else if (!opened && resize) {
-        this.sidebar.withoutAnimation = true;
-        this.sidebar.opened = false;
-        layout.sidebarStatus = false;
-      } else if (!opened && !resize) {
-        this.sidebar.withoutAnimation = false;
-        this.sidebar.opened = !this.sidebar.opened;
-        this.sidebar.isClickCollapse = !this.sidebar.opened;
-        layout.sidebarStatus = this.sidebar.opened;
-      }
-      storageLocal().setItem(`${responsiveStorageNameSpace()}layout`, layout);
-    },
-    async toggleSideBar(opened?: boolean, resize?: string) {
-      await this.TOGGLE_SIDEBAR(opened, resize);
-    },
-    toggleDevice(device: string) {
-      this.device = device;
-    },
-    setLayout(layout) {
-      this.layout = layout;
-    },
-    setViewportSize(size) {
-      this.viewportSize = size;
-    },
-    setSortSwap(val) {
-      this.sortSwap = val;
-    }
-  }
-});
-
-export function useAppStoreHook() {
-  return useAppStore(store);
+interface Sidebar {
+  opened: boolean
+  withoutAnimation: boolean
 }
+
+/** 设置侧边栏状态本地缓存 */
+function handleSidebarStatus(opened: boolean) {
+  opened ? setSidebarStatus(SIDEBAR_OPENED) : setSidebarStatus(SIDEBAR_CLOSED)
+}
+
+export const useAppStore = defineStore("app", () => {
+  /** 侧边栏状态 */
+  const sidebar: Sidebar = reactive({
+    opened: getSidebarStatus() !== SIDEBAR_CLOSED,
+    withoutAnimation: false
+  })
+  /** 设备类型 */
+  const device = ref<DeviceEnum>(DeviceEnum.Desktop)
+
+  /** 监听侧边栏 opened 状态 */
+  watch(
+    () => sidebar.opened,
+    (opened) => handleSidebarStatus(opened)
+  )
+
+  /** 切换侧边栏 */
+  const toggleSidebar = (withoutAnimation: boolean) => {
+    sidebar.opened = !sidebar.opened
+    sidebar.withoutAnimation = withoutAnimation
+  }
+  /** 关闭侧边栏 */
+  const closeSidebar = (withoutAnimation: boolean) => {
+    sidebar.opened = false
+    sidebar.withoutAnimation = withoutAnimation
+  }
+  /** 切换设备类型 */
+  const toggleDevice = (value: DeviceEnum) => {
+    device.value = value
+  }
+
+  return { device, sidebar, toggleSidebar, closeSidebar, toggleDevice }
+})
