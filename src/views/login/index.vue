@@ -22,13 +22,13 @@ const loading = ref(false)
 const codeUrl = ref("")
 /** 登录表单数据 */
 const loginFormData: LoginRequestData = reactive({
-  username: "admin",
+  nickname: "七七1",
   password: "12345678",
   code: ""
 })
 /** 登录表单校验规则 */
 const loginFormRules: FormRules = {
-  username: [{ required: true, message: "请输入用户名", trigger: "blur" }],
+  nickname: [{ required: true, message: "请输入用户名", trigger: "blur" }],
   password: [
     { required: true, message: "请输入密码", trigger: "blur" },
     { min: 8, max: 16, message: "长度在 8 到 16 个字符", trigger: "blur" }
@@ -62,10 +62,12 @@ const createCode = () => {
   // 先清空验证码的输入
   loginFormData.code = ""
   // 获取验证码
-  codeUrl.value = ""
-  getLoginCodeApi().then((res) => {
-    codeUrl.value = res.data
-  })
+  codeUrl.value = "/dev-api/auth/code?" + getRandomNum(1000, 9999)
+}
+
+// 获取随机数
+const getRandomNum = (min: number, max: number) => {
+  return Math.floor(Math.random() * (max - min + 1)) + min
 }
 
 /** 初始化验证码 */
@@ -82,39 +84,17 @@ createCode()
       </div>
       <div class="content">
         <el-form ref="loginFormRef" :model="loginFormData" :rules="loginFormRules" @keyup.enter="handleLogin">
-          <el-form-item prop="username">
-            <el-input
-              v-model.trim="loginFormData.username"
-              placeholder="用户名"
-              type="text"
-              tabindex="1"
-              :prefix-icon="User"
-              size="large"
-            />
+          <el-form-item prop="nickname">
+            <el-input v-model.trim="loginFormData.nickname" placeholder="用户名" type="text" tabindex="1"
+              :prefix-icon="User" size="large" />
           </el-form-item>
           <el-form-item prop="password">
-            <el-input
-              v-model.trim="loginFormData.password"
-              placeholder="密码"
-              type="password"
-              tabindex="2"
-              :prefix-icon="Lock"
-              size="large"
-              show-password
-              @blur="handleBlur"
-              @focus="handleFocus"
-            />
+            <el-input v-model.trim="loginFormData.password" placeholder="密码" type="password" tabindex="2"
+              :prefix-icon="Lock" size="large" show-password @blur="handleBlur" @focus="handleFocus" />
           </el-form-item>
           <el-form-item prop="code">
-            <el-input
-              v-model.trim="loginFormData.code"
-              placeholder="验证码"
-              type="text"
-              tabindex="3"
-              :prefix-icon="Key"
-              maxlength="7"
-              size="large"
-            >
+            <el-input v-model.trim="loginFormData.code" placeholder="验证码" type="text" tabindex="3" :prefix-icon="Key"
+              maxlength="7" size="large">
               <template #append>
                 <el-image :src="codeUrl" @click="createCode" draggable="false">
                   <template #placeholder>
@@ -146,12 +126,14 @@ createCode()
   align-items: center;
   width: 100%;
   min-height: 100%;
+
   .theme-switch {
     position: fixed;
     top: 5%;
     right: 5%;
     cursor: pointer;
   }
+
   .login-card {
     width: 480px;
     max-width: 90%;
@@ -159,20 +141,25 @@ createCode()
     box-shadow: 0 0 10px #dcdfe6;
     background-color: var(--el-bg-color);
     overflow: hidden;
+
     .title {
       display: flex;
       justify-content: center;
       align-items: center;
       height: 150px;
+
       img {
         height: 100%;
       }
     }
+
     .content {
       padding: 20px 50px 50px 50px;
+
       :deep(.el-input-group__append) {
         padding: 0;
         overflow: hidden;
+
         .el-image {
           width: 100px;
           height: 40px;
@@ -182,6 +169,7 @@ createCode()
           text-align: center;
         }
       }
+
       .el-button {
         width: 100%;
         margin-top: 10px;

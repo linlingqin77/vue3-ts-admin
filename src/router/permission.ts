@@ -32,7 +32,7 @@ router.beforeEach(async (to, _from, next) => {
     return next({ path: "/" })
   }
 
-  // 如果用户已经获得其权限角色
+  // // 如果用户已经获得其权限角色
   if (userStore.roles.length !== 0) return next()
 
   // 否则要重新获取权限角色
@@ -53,6 +53,7 @@ router.beforeEach(async (to, _from, next) => {
     ElMessage.error(err.message || "路由守卫过程发生错误")
     next("/login")
   }
+  // next()
 })
 
 router.afterEach((to) => {
