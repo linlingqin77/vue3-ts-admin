@@ -16,3 +16,13 @@ export function createMenuApi(data: Menus.CreateOrUpdateMenuRequestData) {
     data
   })
 }
+
+// 删除菜单
+
+export function deleteMenuApi(id: number) {
+  return request({
+    url: "/system/menu/delete",
+    method: "delete",
+    params: { id }
+  })
+}

@@ -1,13 +1,18 @@
 <script lang="ts" setup>
 import { ref, onMounted, reactive } from "vue"
-import { getMenusTreeApi } from "@/api/system/menus"
+import { getMenusTreeApi, deleteMenuApi, createMenuApi } from "@/api/system/menus"
 import { CreateOrUpdateMenuRequestData } from "@/api/system/menus/types"
 import AddUpdateDialog from "./components/add-update-dialog.vue"
+import * as Menus from "@/api/system/menus/types"
+import { ElMessage } from "element-plus"
 const formData = reactive({
   name: "",
   status: ""
 })
-const status_options = [
+const dialogTitle = ref("")
+const dialogData = ref<Menus.IMenus>()
+const showAddUpdateDialog = ref(false)
+const statusOptions = [
   { label: "启用", value: 1 },
   { label: "禁用", value: 0 }
 ]
@@ -18,8 +23,30 @@ const getMenusTree = async () => {
   const res = await getMenusTreeApi()
   tableData.value = res.data
 }
-const showAddUpdateDialog = defineModel({ default: false })
 
+// 修改start
+const editBtn = (val: Menus.IMenus) => {
+  dialogTitle.value = "编辑菜单"
+  dialogData.value = val
+  showAddUpdateDialog.value = true
+}
+// 修改end
+
+// 新增start
+const addBtn = (val?: Menus.IMenus) => {
+  dialogTitle.value = "新增菜单"
+  dialogData.value = val
+  showAddUpdateDialog.value = true
+}
+// 新增end
+
+// 删除start
+const deleteBtn = async (id: number) => {
+  await deleteMenuApi(id)
+  ElMessage({ message: "删除成功", type: "success" })
+  await getMenusTree()
+}
+// 删除end
 getMenusTree()
 </script>
 
@@ -32,7 +59,7 @@ getMenusTree()
         </el-form-item>
         <el-form-item label="状态">
           <el-select v-model="formData.status" placeholder="Select" style="width: 240px">
-            <el-option v-for="item in status_options" :key="item.value" :label="item.label" :value="item.value" />
+            <el-option v-for="item in statusOptions" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>
         </el-form-item>
         <el-form-item>
@@ -45,7 +72,7 @@ getMenusTree()
 
       <el-row :gutter="10" class="mb-2">
         <el-col :span="1.5">
-          <el-button type="primary" icon="Plus" @click="showAddUpdateDialog = true">新增</el-button>
+          <el-button type="primary" icon="Plus" @click="addBtn()">新增</el-button>
         </el-col>
         <el-col :span="1.5">
           <el-button type="primary" icon="Plus">展开/折叠</el-button>
@@ -66,15 +93,15 @@ getMenusTree()
         <el-table-column prop="create_time" label="创建时间" />
         <el-table-column label="操作" align="center">
           <template #default="scope">
-            <el-button type="text" icon="edit" size="small">修改</el-button>
-            <el-button type="text" icon="Plus" size="small">新增</el-button>
-            <el-button type="text" icon="delete" size="small">删除</el-button>
+            <el-button type="text" icon="edit" size="small" @click="editBtn(scope.row)">修改</el-button>
+            <el-button type="text" icon="Plus" size="small" @click="addBtn(scope.row)">新增</el-button>
+            <el-button type="text" icon="delete" size="small" @click="deleteBtn(scope.row.id)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
     </el-card>
 
-    <AddUpdateDialog v-model:visible="showAddUpdateDialog" title="新增菜单" />
+    <AddUpdateDialog v-model:visible="showAddUpdateDialog" :title="dialogTitle" :data="dialogData" />
   </div>
 </template>
 

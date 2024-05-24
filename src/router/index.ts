@@ -55,7 +55,7 @@ export const constantRoutes: RouteRecordRaw[] = [
         name: "Dashboard",
         meta: {
           title: "首页",
-          svgIcon: "dashboard",
+          svgIcon: "avatar",
           affix: true
         }
       }

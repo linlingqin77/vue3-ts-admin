@@ -3,22 +3,22 @@ export interface IMenus {
   name: string
   order: number
   parent_id: number
-  type: any
-  icon: any
+  type: number
+  icon: string
   component: string
-  path: string
-  create_by: any
-  permission: any
-  is_frame: string
-  is_cache: string
-  visible: string
-  create_time: string
-  update_time: string
+  router_path: string
+  router_params: string
+  create_by: string
+  permission: string
+  is_frame: number
+  is_cache: number
+  visible: number
+  status: number
+  create_time?: string
+  update_time?: string
   children?: IMenus[]
 }
 
-export interface CreateOrUpdateMenuRequestData extends IMenus {
-  children?: CreateOrUpdateMenuRequestData[]
-}
+export interface CreateOrUpdateMenuRequestData extends IMenus {}
 
 export type GetMenusResponseData = ApiResponseData<CreateOrUpdateMenuRequestData[]>
