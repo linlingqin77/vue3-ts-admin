@@ -21,6 +21,7 @@ const visible = defineModel("visible", {
   type: Boolean,
   default: false
 })
+
 const formData = ref({
   name: "",
   order: 0,
@@ -57,7 +58,7 @@ watch(
 // 确定
 const confirm = async (formEl: FormInstance | undefined) => {
   if (!formEl) return
-  formEl.validate((valid) => {
+  formEl.validate(async (valid) => {
     if (valid) {
       console.log("确定")
       // emits("update:visible", false)
