@@ -22,7 +22,16 @@ export function createMenuApi(data: Menus.CreateOrUpdateMenuRequestData) {
 export function deleteMenuApi(id: number) {
   return request({
     url: "/system/menu/delete",
-    method: "delete",
+    method: "post",
     params: { id }
+  })
+}
+// 编辑菜单
+
+export function updateMenuApi(data: Menus.CreateOrUpdateMenuRequestData) {
+  return request({
+    url: "/system/menu/update",
+    method: "post",
+    data
   })
 }

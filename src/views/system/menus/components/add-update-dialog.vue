@@ -1,17 +1,19 @@
 <script lang="ts" setup>
-import { ref, onMounted, watch, PropType, reactive } from "vue"
+import { ref, watch, PropType, reactive } from "vue"
 import { ElForm, ElMessage } from "element-plus"
 import type { FormInstance, FormRules } from "element-plus"
 import * as Menus from "@/api/system/menus/types"
-import { getMenusTreeApi, createMenuApi } from "@/api/system/menus"
+import { IdialogProps } from "../types/index"
+import { getMenusTreeApi, createMenuApi, updateMenuApi } from "@/api/system/menus"
 import IconSelect from "@/components/IconSelect/index.vue"
-const props = defineProps({
-  visible: { type: Boolean, default: false },
-  title: { type: String, default: "新增菜单" },
-  type: { type: String, default: "add" },
-  data: { type: Object as PropType<Menus.IMenus>, default: () => {} }
-})
-const form = ref<FormInstance>()
+// const props = defineProps({
+//   visible: { type: Boolean, default: false },
+//   title: { type: String, default: "新增菜单" },
+//   type: { type: string },
+//   data: { type: Object as PropType<Menus.IMenus>, default: () => {} }
+// })
+const props = defineProps<IdialogProps>()
+
 const rules = reactive<FormRules<typeof formData>>({
   name: [{ required: true, message: "请输入菜单名称", trigger: "blur" }],
   order: [{ required: true, message: "请输入菜单排序", trigger: "blur" }],
@@ -21,7 +23,9 @@ const visible = defineModel("visible", {
   type: Boolean,
   default: false
 })
+const emits = defineEmits(["add", "edit"])
 
+const form = ref<FormInstance>()
 const formData = ref({
   name: "",
   order: 0,
@@ -33,12 +37,17 @@ const formData = ref({
   router_params: "",
   create_by: "",
   permission: "perms-1",
-  is_frame: 1,
+  is_frame: 0,
   is_cache: 0,
   visible: 0,
-  status: 1
+  status: 0
 })
-
+const resetForm = (formEl: FormInstance | undefined) => {
+  if (!formEl) return
+  formEl.resetFields()
+  console.log('重置表单');
+  
+}
 const menusList = ref<Menus.IMenus[]>([])
 const getMenusTree = async () => {
   const res = await getMenusTreeApi()
@@ -51,6 +60,8 @@ watch(
   (newVal, oldVal) => {
     if (newVal) {
       formData.value = { ...newVal }
+    }else{
+      resetForm(form.value)
     }
   }
 )
@@ -60,19 +71,39 @@ const confirm = async (formEl: FormInstance | undefined) => {
   if (!formEl) return
   formEl.validate(async (valid) => {
     if (valid) {
-      console.log("确定")
-      // emits("update:visible", false)
-      await createMenuApi(formData.value)
-      ElMessage.success("新增成功")
-      visible.value = false
-    } else {
+      // if (props.type === "add") {
+      //   await createMenuApi(formData.value)
+      //   ElMessage.success("新增成功")
+      //   emits("add")
+      //   visible.value = false
+      // } else if (props.type === "edit") {
+      //   await updateMenuApi(formData.value)
+      //   ElMessage.success("修改成功")
+      //   emits("edit")
+      //   visible.value = false
+      // }
+      switch (props.type) {
+        case "add":
+          await createMenuApi(formData.value)
+          ElMessage.success("新增成功")
+          emits("add")
+          visible.value = false
+          break
+        case "edit":
+          await updateMenuApi(formData.value)
+          ElMessage.success("修改成功")
+          emits("edit")
+          break
+        default:
+          break
+      }
     }
   })
 }
 </script>
 
 <template>
-  <el-dialog v-model="visible" :title="props.title" ref="form" width="600px">
+  <el-dialog v-model="visible" :title="props.title" width="600px">
     <el-form ref="form" :model="formData" label-width="80px" :rules="rules">
       <el-row>
         <el-col :span="24">
@@ -167,8 +198,8 @@ const confirm = async (formEl: FormInstance | undefined) => {
 
     <template #footer>
       <div class="dialog-footer">
-        <el-button @click="confirm">取消</el-button>
-        <el-button type="primary" @click="confirm">确定</el-button>
+        <el-button @click="confirm(form)">取消</el-button>
+        <el-button type="primary" @click="confirm(form)">确定</el-button>
       </div>
     </template>
   </el-dialog>

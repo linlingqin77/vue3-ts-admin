@@ -1,5 +1,5 @@
 export interface IMenus {
-  id?: number
+  id: number
   name: string
   order: number
   parent_id: number
@@ -19,6 +19,9 @@ export interface IMenus {
   children?: IMenus[]
 }
 
-export interface CreateOrUpdateMenuRequestData extends IMenus {}
+export interface CreateOrUpdateMenuRequestData extends Omit<IMenus,'id'> {
+  id?:number
+}
 
-export type GetMenusResponseData = ApiResponseData<CreateOrUpdateMenuRequestData[]>
+
+export type GetMenusResponseData = ApiResponseData<IMenus[]>
