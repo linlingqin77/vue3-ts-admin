@@ -5,7 +5,7 @@ import { CreateOrUpdateMenuRequestData } from "@/api/system/menus/types"
 import AddUpdateDialog from "./components/add-update-dialog.vue"
 import * as Menus from "@/api/system/menus/types"
 import { IdialogProps, IdialogTitle, IdialogType, IdialogData } from "./types/index"
-import { ElMessage,TableInstance } from "element-plus"
+import { ElMessage, TableInstance } from "element-plus"
 const formData = reactive({
   name: "",
   status: ""
@@ -19,19 +19,17 @@ const statusOptions = [
   { label: "禁用", value: 0 }
 ]
 
-
 const tableData = ref<CreateOrUpdateMenuRequestData[]>([])
-const tableRef=ref<TableInstance>()
-const isTableExpand=ref<boolean>(true) //是否展开
+const tableRef = ref<TableInstance>()
+const isTableExpand = ref<boolean>(true) //是否展开
 
 // 展开 收缩
-const expandBtn=()=>{
-  isTableExpand.value=!isTableExpand.value
-  tableRef.value?.store.states.expandRows.value.forEach((row:any) => {
-      tableRef.value?.toggleRowExpansion(row);
-    });
-  console.log(isTableExpand.value,'isTableExpand');
-  
+const expandBtn = () => {
+  isTableExpand.value = !isTableExpand.value
+  tableRef.value?.store.states.expandRows.value.forEach((row: any) => {
+    tableRef.value?.toggleRowExpansion(row)
+  })
+  console.log(isTableExpand.value, "isTableExpand")
 }
 const getMenusTree = async () => {
   const res = await getMenusTreeApi()
@@ -115,8 +113,15 @@ getMenusTree()
         </el-col>
       </el-row>
 
-      <el-table :data="tableData" style="width: 100%" row-key="id" border :tree-props="{ children: 'children' }"
-      :default-expand-all="isTableExpand" ref="tableRef">
+      <el-table
+        :data="tableData"
+        style="width: 100%"
+        row-key="id"
+        border
+        :tree-props="{ children: 'children' }"
+        :default-expand-all="isTableExpand"
+        ref="tableRef"
+      >
         <el-table-column prop="name" label="菜单名称"></el-table-column>
         <el-table-column prop="icon" label="图标" width="100" align="center">
           <template #default="scope">
@@ -124,6 +129,11 @@ getMenusTree()
           </template>
         </el-table-column>
         <el-table-column prop="order" label="排序" width="80" align="center" />
+        <el-table-column prop="type" label="类型" width="80" align="center">
+          <template #default="scope">
+            <el-tag type="primary">{{ scope.row.type === 1 ? "目录" : scope.row.type === 2 ? "菜单" : "按钮" }}</el-tag>
+          </template>
+        </el-table-column>
         <el-table-column prop="permission" label="权限标识" align="center" />
         <el-table-column prop="component" label="组件路径" align="center" />
         <el-table-column prop="status" label="状态" width="80" align="center">
@@ -134,7 +144,7 @@ getMenusTree()
           </template>
         </el-table-column>
         <el-table-column prop="create_time" label="创建时间" align="center" />
-        <el-table-column label="操作" align="center">
+        <el-table-column label="操作" align="center" width="300px">
           <template #default="scope">
             <el-button type="text" icon="edit" size="small" @click="editBtn(scope.row)">修改</el-button>
             <el-button type="text" icon="Plus" size="small" @click="addChildrenBtn(scope.row)">新增</el-button>

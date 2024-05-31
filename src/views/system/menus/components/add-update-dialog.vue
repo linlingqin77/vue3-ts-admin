@@ -45,8 +45,7 @@ const formData = ref({
 const resetForm = (formEl: FormInstance | undefined) => {
   if (!formEl) return
   formEl.resetFields()
-  console.log('重置表单');
-  
+  console.log("重置表单")
 }
 const menusList = ref<Menus.IMenus[]>([])
 const getMenusTree = async () => {
@@ -60,7 +59,7 @@ watch(
   (newVal, oldVal) => {
     if (newVal) {
       formData.value = { ...newVal }
-    }else{
+    } else {
       resetForm(form.value)
     }
   }
@@ -93,6 +92,7 @@ const confirm = async (formEl: FormInstance | undefined) => {
           await updateMenuApi(formData.value)
           ElMessage.success("修改成功")
           emits("edit")
+          visible.value = false
           break
         default:
           break
