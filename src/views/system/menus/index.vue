@@ -6,7 +6,7 @@ import AddUpdateDialog from "./components/add-update-dialog.vue"
 import * as Menus from "@/api/system/menus/types"
 import { IdialogProps, IdialogTitle, IdialogType, IdialogData } from "./types/index"
 import { ElMessage, TableInstance } from "element-plus"
-const formData = reactive({
+const searchFormData = reactive({
   name: "",
   status: "",
   page:1,
@@ -26,7 +26,7 @@ const tableData = ref<CreateOrUpdateMenuRequestData[]>([])
 const tableRef = ref<TableInstance>()
 const isTableExpand = ref<boolean>(true) //是否展开
 
-// 表格展开收缩
+// 展开 收缩
 const expandBtn = () => {
   isTableExpand.value = !isTableExpand.value
   tableRef.value?.store.states.expandRows.value.forEach((row: any) => {
@@ -52,15 +52,8 @@ const isShowSearchForm = ref<boolean>(true)
 // 获取数据
 const tableLoad = ref<boolean>(false)
 const getMenusTree = async () => {
-  try {
-    tableLoad.value = true
-    const res = await getMenusTreeApi({ ...formData })
-    tableData.value = res.data.list
-    formData.total=res.data.total
-    tableLoad.value = false
-  } catch (error) {
-    tableLoad.value = false
-  }
+  const res = await getMenusTreeApi(searchFormData)
+  tableData.value = res.data
 }
 getMenusTree()
 
@@ -85,18 +78,18 @@ const addChildrenBtn = (val: Menus.CreateOrUpdateMenuRequestData) => {
   dialogData.value = {
     name: "",
     order: 0,
-    parent_id: val.id as number,
-    type: 1,
+    parent_id: val.id || 0,
+    type: "1",
     icon: "",
     component: "",
     router_path: "",
     router_params: "",
     create_by: "",
     permission: "",
-    is_frame: 0,
-    is_cache: 0,
-    visible: 0,
-    status: 0
+    is_frame: "0",
+    is_cache: "0",
+    visible: "0",
+    status: "0"
   }
   dialogType.value = "add"
   showAddUpdateDialog.value = true
@@ -125,12 +118,12 @@ const resetSearch = async () => {
 <template>
   <div class="app-container">
     <el-card>
-      <el-form :inline="true" :model="formData" class="demo-form-inline" v-show="isShowSearchForm">
+      <el-form :inline="true" :model="searchFormData" class="demo-form-inline">
         <el-form-item label="菜单名称" prop="name">
-          <el-input v-model="formData.name" clearable></el-input>
+          <el-input v-model="searchFormData.name"></el-input>
         </el-form-item>
         <el-form-item label="状态">
-          <el-select v-model="formData.status" placeholder="Select" style="width: 240px" clearable>
+          <el-select v-model="searchFormData.status" placeholder="Select" style="width: 240px">
             <el-option v-for="item in statusOptions" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>
         </el-form-item>
@@ -154,7 +147,7 @@ const resetSearch = async () => {
       </el-row>
 <!-- 表格 -->
       <el-table :data="tableData" style="width: 100%" row-key="id" border :tree-props="{ children: 'children' }"
-        :default-expand-all="isTableExpand" ref="tableRef" v-loading="tableLoad">
+        :default-expand-all="isTableExpand" ref="tableRef">
         <el-table-column prop="name" label="菜单名称"></el-table-column>
         <el-table-column prop="icon" label="图标" width="100" align="center">
           <template #default="scope">
@@ -162,21 +155,28 @@ const resetSearch = async () => {
           </template>
         </el-table-column>
         <el-table-column prop="order" label="排序" width="80" align="center" />
+        <el-table-column prop="type" label="类型" width="80" align="center">
+          <template #default="scope">
+            <el-tag type="primary">{{ scope.row.type == 1 ? "目录" : scope.row.type == 2 ? "菜单" : "按钮" }}</el-tag>
+          </template>
+        </el-table-column>
         <el-table-column prop="permission" label="权限标识" align="center" />
         <el-table-column prop="component" label="组件路径" align="center" />
         <el-table-column prop="status" label="状态" width="80" align="center">
           <template #default="scope">
-            <el-tag :type="scope.row.status === 0 ? 'success' : 'danger'">{{
-              scope.row.status === 0 ? "启用" : "禁用"
+            <el-tag :type="scope.row.status == 0 ? 'success' : 'danger'">{{
+              scope.row.status == 0 ? "启用" : "禁用"
             }}</el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="create_time" label="创建时间" align="center" />
-        <el-table-column label="操作" align="center">
+        <el-table-column label="操作" align="center" width="300px">
           <template #default="scope">
-            <el-button type="text" icon="edit" size="small" @click="editBtn(scope.row)">修改</el-button>
-            <el-button type="text" icon="Plus" size="small" @click="addChildrenBtn(scope.row)">新增</el-button>
-            <el-button type="text" icon="delete" size="small" @click="deleteBtn(scope.row.id)">删除</el-button>
+            <el-button :text="true" icon="edit" type="primary" size="small" @click="editBtn(scope.row)">修改</el-button>
+            <el-button :text="true" icon="Plus" type="primary" size="small"
+              @click="addChildrenBtn(scope.row)">新增</el-button>
+            <el-button :text="true" icon="delete" type="primary" size="small"
+              @click="deleteBtn(scope.row.id)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
