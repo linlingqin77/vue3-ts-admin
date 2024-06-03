@@ -5,10 +5,13 @@ import { CreateOrUpdateMenuRequestData } from "@/api/system/menus/types"
 import AddUpdateDialog from "./components/add-update-dialog.vue"
 import * as Menus from "@/api/system/menus/types"
 import { IdialogProps, IdialogTitle, IdialogType, IdialogData } from "./types/index"
-import { ElMessage,TableInstance } from "element-plus"
+import { ElMessage, TableInstance } from "element-plus"
 const formData = reactive({
   name: "",
-  status: ""
+  status: "",
+  page:1,
+  pageSize:10,
+  total:400
 })
 const dialogTitle = ref<IdialogTitle>("新增菜单")
 const dialogData = ref<IdialogData>()
@@ -19,24 +22,47 @@ const statusOptions = [
   { label: "禁用", value: 0 }
 ]
 
-
 const tableData = ref<CreateOrUpdateMenuRequestData[]>([])
-const tableRef=ref<TableInstance>()
-const isTableExpand=ref<boolean>(true) //是否展开
+const tableRef = ref<TableInstance>()
+const isTableExpand = ref<boolean>(true) //是否展开
 
-// 展开 收缩
-const expandBtn=()=>{
-  isTableExpand.value=!isTableExpand.value
-  tableRef.value?.store.states.expandRows.value.forEach((row:any) => {
-      tableRef.value?.toggleRowExpansion(row);
-    });
-  console.log(isTableExpand.value,'isTableExpand');
-  
+// 表格展开收缩
+const expandBtn = () => {
+  isTableExpand.value = !isTableExpand.value
+  tableRef.value?.store.states.expandRows.value.forEach((row: any) => {
+    tableRef.value?.toggleRowExpansion(row)
+  })
+  console.log(isTableExpand.value, "isTableExpand")
 }
+// 分页
+const handlePageSizeChange=async(val:number)=>{
+  formData.pageSize=val
+ await getMenusTree()
+}
+const handleCurrentChange=async(val:number)=>{
+  formData.page=val
+  await getMenusTree()
+}
+
+
+
+// 查询表单显示隐藏
+const isShowSearchForm = ref<boolean>(true)
+
+// 获取数据
+const tableLoad = ref<boolean>(false)
 const getMenusTree = async () => {
-  const res = await getMenusTreeApi()
-  tableData.value = res.data
+  try {
+    tableLoad.value = true
+    const res = await getMenusTreeApi({ ...formData })
+    tableData.value = res.data.list
+    formData.total=res.data.total
+    tableLoad.value = false
+  } catch (error) {
+    tableLoad.value = false
+  }
 }
+getMenusTree()
 
 // 修改start
 const editBtn = (val: Menus.IMenus) => {
@@ -46,14 +72,14 @@ const editBtn = (val: Menus.IMenus) => {
   showAddUpdateDialog.value = true
 }
 
-// 新增start
+// 新增菜单
 const addBtn = (val?: Menus.IMenus) => {
   dialogTitle.value = "新增菜单"
   dialogData.value = val
   dialogType.value = "add"
   showAddUpdateDialog.value = true
 }
-
+// 新增子菜单
 const addChildrenBtn = (val: Menus.CreateOrUpdateMenuRequestData) => {
   dialogTitle.value = "新增菜单"
   dialogData.value = {
@@ -76,47 +102,59 @@ const addChildrenBtn = (val: Menus.CreateOrUpdateMenuRequestData) => {
   showAddUpdateDialog.value = true
 }
 
-// 删除start
+// 删除
 const deleteBtn = async (id: number) => {
   await deleteMenuApi(id)
   ElMessage({ message: "删除成功", type: "success" })
   await getMenusTree()
 }
-
-getMenusTree()
+// 搜索按钮
+const searchBtn = async () => {
+  formData.page=1
+  await getMenusTree()
+  console.log("submit!")
+}
+// 重置按钮
+const resetSearch = async () => {
+  formData.name = ""
+  formData.status = ""
+  await getMenusTree()
+}
 </script>
 
 <template>
   <div class="app-container">
     <el-card>
-      <el-form :inline="true" :model="formData" class="demo-form-inline">
+      <el-form :inline="true" :model="formData" class="demo-form-inline" v-show="isShowSearchForm">
         <el-form-item label="菜单名称" prop="name">
-          <el-input v-model="formData.name"></el-input>
+          <el-input v-model="formData.name" clearable></el-input>
         </el-form-item>
         <el-form-item label="状态">
-          <el-select v-model="formData.status" placeholder="Select" style="width: 240px">
+          <el-select v-model="formData.status" placeholder="Select" style="width: 240px" clearable>
             <el-option v-for="item in statusOptions" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary">搜索</el-button>
+          <el-button type="primary" @click="searchBtn">搜索</el-button>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary">重置</el-button>
+          <el-button type="primary" @click="resetSearch">重置</el-button>
         </el-form-item>
       </el-form>
 
-      <el-row :gutter="10" class="mb-2">
-        <el-col :span="1.5">
+      <el-row :gutter="10" class="mb-2" flex="justify-between">
+        <div class="flex justify-between">
           <el-button type="primary" icon="Plus" @click="addBtn()">新增</el-button>
-        </el-col>
-        <el-col :span="1.5">
           <el-button type="primary" icon="Plus" @click="expandBtn()">展开/折叠</el-button>
-        </el-col>
+        </div>
+        <div class="flex justify-between">
+          <el-button icon="Search" circle @click="isShowSearchForm = !isShowSearchForm" />
+          <el-button icon="Refresh" circle @click="getMenusTree" />
+        </div>
       </el-row>
-
+<!-- 表格 -->
       <el-table :data="tableData" style="width: 100%" row-key="id" border :tree-props="{ children: 'children' }"
-      :default-expand-all="isTableExpand" ref="tableRef">
+        :default-expand-all="isTableExpand" ref="tableRef" v-loading="tableLoad">
         <el-table-column prop="name" label="菜单名称"></el-table-column>
         <el-table-column prop="icon" label="图标" width="100" align="center">
           <template #default="scope">
@@ -142,22 +180,31 @@ getMenusTree()
           </template>
         </el-table-column>
       </el-table>
+<!-- 分页 -->
+<el-row flex="justify-end" style="margin-top: 20px">
+  <el-pagination
+      v-model:current-page="formData.page"
+      v-model:page-size="formData.pageSize"
+      :page-sizes="[10, 20, 30, 40]"
+      layout="total, sizes, prev, pager, next, jumper"
+      :total="formData.total"
+      :background="true"
+      @size-change="handlePageSizeChange"
+      @current-change="handleCurrentChange"
+    />
+</el-row>
+   
     </el-card>
 
-    <AddUpdateDialog
-      v-model:visible="showAddUpdateDialog"
-      :title="dialogTitle"
-      :data="dialogData"
-      :type="dialogType"
-      @add="getMenusTree"
-      @edit="getMenusTree"
-    />
+    <AddUpdateDialog v-model:visible="showAddUpdateDialog" :title="dialogTitle" :data="dialogData" :type="dialogType"
+      @add="getMenusTree" @edit="getMenusTree" />
   </div>
 </template>
 
 <style scoped>
 .svg-icon {
   font-size: 20px;
+
   &:focus {
     outline: none;
   }

@@ -10,15 +10,15 @@ const { initTheme } = useTheme()
 initTheme()
 
 /** 作者小心思 */
-ElNotification({
-  title: "Hello",
-  type: "success",
-  dangerouslyUseHTMLString: true,
-  message:
-    "<a style='color: teal' target='_blank' href='https://github.com/un-pany/v3-admin-vite'>小项目获取 star 不易，如果你喜欢这个项目的话，欢迎点击这里支持一个 star ！这是作者持续维护的唯一动力（小声：毕竟是免费的）</a>",
-  duration: 0,
-  position: "bottom-right"
-})
+// ElNotification({
+//   title: "Hello",
+//   type: "success",
+//   dangerouslyUseHTMLString: true,
+//   message:
+//     "<a style='color: teal' target='_blank' href='https://github.com/un-pany/v3-admin-vite'>小项目获取 star 不易，如果你喜欢这个项目的话，欢迎点击这里支持一个 star ！这是作者持续维护的唯一动力（小声：毕竟是免费的）</a>",
+//   duration: 0,
+//   position: "bottom-right"
+// })
 </script>
 
 <template>
@@ -26,3 +26,16 @@ ElNotification({
     <router-view />
   </el-config-provider>
 </template>
+
+<style>
+.flex {
+  display: flex;
+}
+.justify-center {
+  justify-content: center;
+}
+.justify-between {
+  justify-content: space-between;
+}
+
+</style>
