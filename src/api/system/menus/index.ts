@@ -1,10 +1,15 @@
 import { request } from "@/utils/service"
 import * as Menus from "./types"
 // 获取菜单树
-export function getMenusTreeApi() {
+interface GetMenusTreeRequestData {
+  name?: string
+  status?: string
+}
+export function getMenusTreeApi(data: GetMenusTreeRequestData) {
   return request<Menus.GetMenusResponseData>({
     url: "/system/menu/tree",
-    method: "get"
+    method: "get",
+    data
   })
 }
 
