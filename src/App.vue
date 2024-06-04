@@ -31,11 +31,18 @@ initTheme()
 .flex {
   display: flex;
 }
+
 .justify-center {
   justify-content: center;
 }
+
 .justify-between {
   justify-content: space-between;
 }
 
+.h-40-middle {
+  height: 40px;
+  line-height: 40px;
+  margin-left: 15px;
+}
 </style>

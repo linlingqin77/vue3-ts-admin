@@ -1,17 +1,18 @@
 <script lang="ts" setup>
-import { ref, onMounted, reactive } from "vue"
+import { ref, reactive, unref } from "vue"
 import { getMenusTreeApi, deleteMenuApi, createMenuApi } from "@/api/system/menus"
 import { CreateOrUpdateMenuRequestData } from "@/api/system/menus/types"
 import AddUpdateDialog from "./components/add-update-dialog.vue"
 import * as Menus from "@/api/system/menus/types"
 import { IdialogProps, IdialogTitle, IdialogType, IdialogData } from "./types/index"
-import { ElMessage, TableInstance } from "element-plus"
+import { ElMessage, TableInstance, ClickOutside as vClickOutside } from "element-plus"
+
 const searchFormData = reactive({
   name: "",
   status: "",
-  page:1,
-  pageSize:10,
-  total:400
+  page: 1,
+  pageSize: 10,
+  total: 0
 })
 const dialogTitle = ref<IdialogTitle>("新增菜单")
 const dialogData = ref<IdialogData>()
@@ -35,16 +36,14 @@ const expandBtn = () => {
   console.log(isTableExpand.value, "isTableExpand")
 }
 // 分页
-const handlePageSizeChange=async(val:number)=>{
-  formData.pageSize=val
- await getMenusTree()
-}
-const handleCurrentChange=async(val:number)=>{
-  formData.page=val
+const handlePageSizeChange = async (val: number) => {
+  searchFormData.pageSize = val
   await getMenusTree()
 }
-
-
+const handleCurrentChange = async (val: number) => {
+  searchFormData.page = val
+  await getMenusTree()
+}
 
 // 查询表单显示隐藏
 const isShowSearchForm = ref<boolean>(true)
@@ -103,73 +102,121 @@ const deleteBtn = async (id: number) => {
 }
 // 搜索按钮
 const searchBtn = async () => {
-  formData.page=1
+  searchFormData.page = 1
   await getMenusTree()
   console.log("submit!")
 }
 // 重置按钮
 const resetSearch = async () => {
-  formData.name = ""
-  formData.status = ""
+  searchFormData.name = ""
+  searchFormData.status = ""
   await getMenusTree()
 }
+// 表格列筛选
+const tableColumns = ref([
+  { label: "菜单名称", prop: "name", key: "name", visible: true, align: "left" },
+  { label: "图标", prop: "icon", key: 'slot', visible: true, align: "center" },
+  { label: "排序", prop: "order", key: "order", visible: true, align: "center" },
+  { label: "类型", prop: "type", key: 'slot', visible: true, align: "center" },
+  { label: "权限标识", prop: "permission", key: 'permission', visible: true, align: "center" },
+  { label: "组件路径", prop: "component", key: 'component', visible: true, align: "center" },
+  { label: "状态", prop: "status", key: 'slot', visible: true, align: "center" },
+  { label: "创建时间", prop: "create_time", key: 'create_time', visible: true, align: "center" }])
+const tableColumnsRef = ref()
+const tableColumnsPopoverRef = ref()
+const tableColumnsValue = ref(['name', 'icon', 'order', 'type', 'permission', 'component', 'status', 'create_time'])
+const tableColumnsDataChange = () => {
+  tableColumns.value.forEach((val: any) => {
+    if (tableColumnsValue.value.includes(val.prop)) {
+      val.visible = true
+    } else {
+      val.visible = false
+    }
+  })
+}
+const showTableColumns = () => {
+  unref(tableColumnsPopoverRef).popperRef?.delayHide?.()
+}
+
+
+
+
 </script>
 
 <template>
   <div class="app-container">
     <el-card>
-      <el-form :inline="true" :model="searchFormData" class="demo-form-inline">
-        <el-form-item label="菜单名称" prop="name">
-          <el-input v-model="searchFormData.name"></el-input>
-        </el-form-item>
-        <el-form-item label="状态">
-          <el-select v-model="searchFormData.status" placeholder="Select" style="width: 240px">
-            <el-option v-for="item in statusOptions" :key="item.value" :label="item.label" :value="item.value" />
-          </el-select>
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" @click="searchBtn">搜索</el-button>
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" @click="resetSearch">重置</el-button>
-        </el-form-item>
+      <el-form :model="searchFormData" class="demo-form-inline" label-width="auto" v-show="isShowSearchForm">
+        <el-row align="middle">
+          <el-col :xs="24" :sm="12" :md="8" :lg="4" :xl="4">
+            <el-form-item label="菜单名称" prop="name">
+              <el-input v-model="searchFormData.name" placeholder="请输入菜单名称"></el-input>
+            </el-form-item>
+          </el-col>
+          <el-col :xs="24" :sm="12" :md="8" :lg="4" :xl="4">
+            <el-form-item label="状态">
+              <el-select v-model="searchFormData.status" placeholder="菜单状态">
+                <el-option v-for="item in statusOptions" :key="item.value" :label="item.label" :value="item.value" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :xs="24" :sm="12" :md="8" :lg="4" :xl="4">
+            <el-form-item style="margin-left: 30px">
+              <el-button type="primary" @click="searchBtn">搜索</el-button>
+              <el-button type="primary" @click="resetSearch">重置</el-button>
+            </el-form-item>
+          </el-col>
+        </el-row>
       </el-form>
 
-      <el-row :gutter="10" class="mb-2" flex="justify-between">
+      <el-row flex="justify-between" style="margin-bottom: 10px;">
         <div class="flex justify-between">
-          <el-button type="primary" icon="Plus" @click="addBtn()">新增</el-button>
-          <el-button type="primary" icon="Plus" @click="expandBtn()">展开/折叠</el-button>
+          <el-button type="primary" plain icon="Plus" @click="addBtn()">新增</el-button>
+          <el-button type="info" plain icon="Plus" @click="expandBtn()">展开/折叠</el-button>
         </div>
         <div class="flex justify-between">
           <el-button icon="Search" circle @click="isShowSearchForm = !isShowSearchForm" />
           <el-button icon="Refresh" circle @click="getMenusTree" />
+          <el-tooltip class="item" effect="dark" content="显隐列" placement="top">
+            <el-button circle icon="Menu" ref="tableColumnsRef" v-click-outside="showTableColumns" />
+          </el-tooltip>
+          <el-popover ref="tableColumnsPopoverRef" :virtual-ref="tableColumnsRef" trigger="click" virtual-triggering
+            placement="bottom" width="100px">
+            <el-checkbox-group @change="tableColumnsDataChange" v-model="tableColumnsValue">
+              <el-checkbox v-for="item in tableColumns" :label="item.label" :value="item.prop"></el-checkbox>
+            </el-checkbox-group>
+          </el-popover>
         </div>
       </el-row>
-<!-- 表格 -->
+
+      <!-- 表格 -->
       <el-table :data="tableData" style="width: 100%" row-key="id" border :tree-props="{ children: 'children' }"
         :default-expand-all="isTableExpand" ref="tableRef">
-        <el-table-column prop="name" label="菜单名称"></el-table-column>
-        <el-table-column prop="icon" label="图标" width="100" align="center">
-          <template #default="scope">
-            <SvgIcon name="fullscreen-exit" />
-          </template>
-        </el-table-column>
-        <el-table-column prop="order" label="排序" width="80" align="center" />
-        <el-table-column prop="type" label="类型" width="80" align="center">
-          <template #default="scope">
-            <el-tag type="primary">{{ scope.row.type == 1 ? "目录" : scope.row.type == 2 ? "菜单" : "按钮" }}</el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="permission" label="权限标识" align="center" />
-        <el-table-column prop="component" label="组件路径" align="center" />
-        <el-table-column prop="status" label="状态" width="80" align="center">
-          <template #default="scope">
-            <el-tag :type="scope.row.status == 0 ? 'success' : 'danger'">{{
-              scope.row.status == 0 ? "启用" : "禁用"
-            }}</el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="create_time" label="创建时间" align="center" />
+        <template v-for="item in tableColumns">
+          <el-table-column :prop="item.prop" :label="item.label" v-if="item.key !== 'slot' && item.visible"
+            :align="item.align"></el-table-column>
+          <el-table-column :prop="item.prop" :label="item.label"
+            v-if="item.key == 'slot' && item.prop == 'icon' && item.visible" :align="item.align">
+            <template #default="scope">
+              <SvgIcon name="fullscreen-exit" />
+            </template>
+          </el-table-column>
+          <el-table-column :prop="item.prop" :label="item.label"
+            v-if="item.key == 'slot' && item.prop == 'type' && item.visible" :align="item.align">
+            <template #default="scope">
+              <el-tag type="primary">{{ scope.row.type == 1 ? "目录" : scope.row.type == 2 ? "菜单" : "按钮" }}</el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column :prop="item.prop" :label="item.label"
+            v-if="item.key == 'slot' && item.prop == 'status' && item.visible" :align="item.align">
+            <template #default="scope">
+              <el-tag :type="scope.row.status == 0 ? 'success' : 'danger'">{{
+                scope.row.status == 0 ? "启用" : "禁用"
+              }}</el-tag>
+            </template>
+          </el-table-column>
+
+        </template>
         <el-table-column label="操作" align="center" width="300px">
           <template #default="scope">
             <el-button :text="true" icon="edit" type="primary" size="small" @click="editBtn(scope.row)">修改</el-button>
@@ -180,20 +227,13 @@ const resetSearch = async () => {
           </template>
         </el-table-column>
       </el-table>
-<!-- 分页 -->
-<el-row flex="justify-end" style="margin-top: 20px">
-  <el-pagination
-      v-model:current-page="formData.page"
-      v-model:page-size="formData.pageSize"
-      :page-sizes="[10, 20, 30, 40]"
-      layout="total, sizes, prev, pager, next, jumper"
-      :total="formData.total"
-      :background="true"
-      @size-change="handlePageSizeChange"
-      @current-change="handleCurrentChange"
-    />
-</el-row>
-   
+      <!-- 分页 -->
+      <el-row flex="justify-end" style="margin-top: 20px">
+        <el-pagination v-model:current-page="searchFormData.page" v-model:page-size="searchFormData.pageSize"
+          :page-sizes="[10, 20, 30, 40]" layout="total, sizes, prev, pager, next, jumper" :total="searchFormData.total"
+          :background="true" @size-change="handlePageSizeChange" @current-change="handleCurrentChange" />
+      </el-row>
+
     </el-card>
 
     <AddUpdateDialog v-model:visible="showAddUpdateDialog" :title="dialogTitle" :data="dialogData" :type="dialogType"

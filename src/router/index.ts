@@ -71,15 +71,15 @@ export const constantRoutes: RouteRecordRaw[] = [
     name: "System",
     redirect: "/system/menus",
     children: [
-      // {
-      //   path: "user",
-      //   component: () => import("@/views/system/menus/index.vue"),
-      //   name: "user",
-      //   meta: {
-      //     title: "用户管理",
-      //     svgIcon: "dashboard"
-      //   }
-      // },
+      {
+        path: "user",
+        component: () => import("@/views/system/users/index.vue"),
+        name: "users",
+        meta: {
+          title: "用户管理",
+          svgIcon: "dashboard"
+        }
+      },
       {
         path: "menus",
         component: () => import("@/views/system/menus/index.vue"),
