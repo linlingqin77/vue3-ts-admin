@@ -23,4 +23,9 @@ export interface CreateOrUpdateMenuRequestData extends Omit<IMenus, "id"> {
   id?: number
 }
 
-export type GetMenusResponseData = ApiResponseData<IMenus[]>
+export type GetMenusResponseData = ApiResponseData<{
+  list: IMenus[]
+  total: number
+  page: number
+  pageSize: number
+}>

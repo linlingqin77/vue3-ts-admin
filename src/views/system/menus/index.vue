@@ -19,8 +19,8 @@ const dialogData = ref<IdialogData>()
 const dialogType = ref<IdialogType>("add")
 const showAddUpdateDialog = ref(false)
 const statusOptions = [
-  { label: "启用", value: 1 },
-  { label: "禁用", value: 0 }
+  { label: "正常", value: 0 },
+  { label: "体验", value: 1 }
 ]
 
 const tableData = ref<CreateOrUpdateMenuRequestData[]>([])
@@ -39,10 +39,13 @@ const expandBtn = () => {
 const handlePageSizeChange = async (val: number) => {
   searchFormData.pageSize = val
   await getMenusTree()
+  console.log(val, "val");
+
 }
 const handleCurrentChange = async (val: number) => {
   searchFormData.page = val
   await getMenusTree()
+  console.log(val, "val");
 }
 
 // 查询表单显示隐藏
@@ -51,10 +54,19 @@ const isShowSearchForm = ref<boolean>(true)
 // 获取数据
 const tableLoad = ref<boolean>(false)
 const getMenusTree = async () => {
-  const res = await getMenusTreeApi(searchFormData)
-  tableData.value = res.data
+  try {
+    tableLoad.value = true
+    const res = await getMenusTreeApi(searchFormData)
+    tableLoad.value = false
+    searchFormData.total = res.data.total
+    console.log(res, 'res');
+    tableData.value = res.data.list
+  } catch (error) {
+    tableLoad.value = false
+  }
+
 }
-getMenusTree()
+
 
 // 修改start
 const editBtn = (val: Menus.IMenus) => {
@@ -111,6 +123,7 @@ const resetSearch = async () => {
   searchFormData.name = ""
   searchFormData.status = ""
   await getMenusTree()
+  console.log("reset!")
 }
 // 表格列筛选
 const tableColumns = ref([
@@ -137,7 +150,7 @@ const tableColumnsDataChange = () => {
 const showTableColumns = () => {
   unref(tableColumnsPopoverRef).popperRef?.delayHide?.()
 }
-
+getMenusTree()
 
 
 
@@ -150,12 +163,12 @@ const showTableColumns = () => {
         <el-row align="middle">
           <el-col :xs="24" :sm="12" :md="8" :lg="4" :xl="4">
             <el-form-item label="菜单名称" prop="name">
-              <el-input v-model="searchFormData.name" placeholder="请输入菜单名称"></el-input>
+              <el-input v-model="searchFormData.name" placeholder="请输入菜单名称" clearable></el-input>
             </el-form-item>
           </el-col>
           <el-col :xs="24" :sm="12" :md="8" :lg="4" :xl="4">
             <el-form-item label="状态">
-              <el-select v-model="searchFormData.status" placeholder="菜单状态">
+              <el-select v-model="searchFormData.status" placeholder="菜单状态" clearable>
                 <el-option v-for="item in statusOptions" :key="item.value" :label="item.label" :value="item.value" />
               </el-select>
             </el-form-item>
@@ -191,7 +204,7 @@ const showTableColumns = () => {
 
       <!-- 表格 -->
       <el-table :data="tableData" style="width: 100%" row-key="id" border :tree-props="{ children: 'children' }"
-        :default-expand-all="isTableExpand" ref="tableRef">
+        :default-expand-all="isTableExpand" ref="tableRef" v-loading="tableLoad">
         <template v-for="item in tableColumns">
           <el-table-column :prop="item.prop" :label="item.label" v-if="item.key !== 'slot' && item.visible"
             :align="item.align"></el-table-column>
@@ -211,7 +224,7 @@ const showTableColumns = () => {
             v-if="item.key == 'slot' && item.prop == 'status' && item.visible" :align="item.align">
             <template #default="scope">
               <el-tag :type="scope.row.status == 0 ? 'success' : 'danger'">{{
-                scope.row.status == 0 ? "启用" : "禁用"
+                scope.row.status == 0 ? "正常" : "停用"
               }}</el-tag>
             </template>
           </el-table-column>

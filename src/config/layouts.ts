@@ -31,6 +31,8 @@ export interface LayoutSettings {
   showGreyMode: boolean
   /** 是否显示色弱模式 */
   showColorWeakness: boolean
+  /** 是否显示切换组件大小*/
+  showToggleSize: boolean
 }
 
 /** 默认配置 */
@@ -48,7 +50,8 @@ const defaultSettings: LayoutSettings = {
   cacheTagsView: false,
   showWatermark: true,
   showGreyMode: false,
-  showColorWeakness: false
+  showColorWeakness: false,
+  showToggleSize: true
 }
 
 /** 项目配置 */

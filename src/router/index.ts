@@ -91,7 +91,7 @@ export const constantRoutes: RouteRecordRaw[] = [
       },
       {
         path: "department",
-        component: () => import("@/views/system/menus/index.vue"),
+        component: () => import("@/views/system/departments/index.vue"),
         name: "department",
         meta: {
           title: "部门管理",

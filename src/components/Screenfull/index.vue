@@ -18,7 +18,7 @@ const props = withDefaults(defineProps<Props>(), {
   element: "html",
   openTips: "全屏",
   exitTips: "退出全屏",
-  content: false
+  content: true
 })
 
 //#region 全屏
@@ -96,6 +96,7 @@ const handleContentFullClick = () => {
 <style lang="scss" scoped>
 .svg-icon {
   font-size: 20px;
+
   &:focus {
     outline: none;
   }

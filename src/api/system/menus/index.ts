@@ -5,11 +5,11 @@ interface GetMenusTreeRequestData {
   name?: string
   status?: string
 }
-export function getMenusTreeApi(data: GetMenusTreeRequestData) {
+export function getMenusTreeApi(params?: GetMenusTreeRequestData) {
   return request<Menus.GetMenusResponseData>({
     url: "/system/menu/tree",
     method: "get",
-    data
+    params
   })
 }
 

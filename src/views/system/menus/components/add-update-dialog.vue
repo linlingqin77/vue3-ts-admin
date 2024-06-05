@@ -51,7 +51,7 @@ const resetForm = (formEl: FormInstance | undefined) => {
 const menusList = ref<Menus.IMenus[]>([])
 const getMenusTree = async () => {
   const res = await getMenusTreeApi({})
-  menusList.value = res.data
+  menusList.value = res.data.list
 }
 getMenusTree()
 
@@ -140,7 +140,7 @@ const closeDialog = () => {
         </el-col>
         <el-col :span="12">
           <el-form-item label="显示顺序" prop="order">
-            <el-input v-model="formData.order"></el-input>
+            <el-input v-model="formData.order" type="number"></el-input>
           </el-form-item>
         </el-col>
         <el-col :span="12" v-if="formData.type === '1' || formData.type === '2'">

@@ -42,6 +42,13 @@ export const useAppStore = defineStore("app", () => {
   const toggleDevice = (value: DeviceEnum) => {
     device.value = value
   }
+  /** 切换组件大小类型 */
+  type ComponentSizeEnum = "default" | "small" | "large"
 
-  return { device, sidebar, toggleSidebar, closeSidebar, toggleDevice }
+  const componentSize = ref<ComponentSizeEnum>("default")
+  const toggleComponentSize = (value: ComponentSizeEnum) => {
+    componentSize.value = value
+  }
+
+  return { device, sidebar, toggleSidebar, closeSidebar, toggleDevice, toggleComponentSize, componentSize }
 })
