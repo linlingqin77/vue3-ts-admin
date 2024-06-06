@@ -161,19 +161,19 @@ getMenusTree()
     <el-card>
       <el-form :model="searchFormData" class="demo-form-inline" label-width="auto" v-show="isShowSearchForm">
         <el-row align="middle">
-          <el-col :xs="24" :sm="12" :md="8" :lg="4" :xl="4">
+          <el-col :xs="24" :sm="12" :md="8" :lg="6" :xl="4.8">
             <el-form-item label="菜单名称" prop="name">
               <el-input v-model="searchFormData.name" placeholder="请输入菜单名称" clearable></el-input>
             </el-form-item>
           </el-col>
-          <el-col :xs="24" :sm="12" :md="8" :lg="4" :xl="4">
+          <el-col :xs="24" :sm="12" :md="8" :lg="6" :xl="4.8">
             <el-form-item label="状态">
               <el-select v-model="searchFormData.status" placeholder="菜单状态" clearable>
                 <el-option v-for="item in statusOptions" :key="item.value" :label="item.label" :value="item.value" />
               </el-select>
             </el-form-item>
           </el-col>
-          <el-col :xs="24" :sm="12" :md="8" :lg="4" :xl="4">
+          <el-col :xs="24" :sm="12" :md="8" :lg="6" :xl="4.8">
             <el-form-item style="margin-left: 30px">
               <el-button type="primary" @click="searchBtn">搜索</el-button>
               <el-button type="primary" @click="resetSearch">重置</el-button>
@@ -211,7 +211,7 @@ getMenusTree()
           <el-table-column :prop="item.prop" :label="item.label"
             v-if="item.key == 'slot' && item.prop == 'icon' && item.visible" :align="item.align">
             <template #default="scope">
-              <SvgIcon name="fullscreen-exit" />
+              <SvgIcon :name="scope.row.icon" />
             </template>
           </el-table-column>
           <el-table-column :prop="item.prop" :label="item.label"

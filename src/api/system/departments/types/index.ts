@@ -19,7 +19,7 @@ export type GetDepartmentRequestParams = {
   name?: string
   status?: string
 }
-export type GetDepartmentRequestData = ApiResponseData<{
+export type GetDepartmentResponseData = ApiResponseData<{
   list: DepartmentResponseData[]
   total: number
   page: number

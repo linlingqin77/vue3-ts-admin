@@ -28,7 +28,7 @@ initTheme()
   </el-config-provider>
 </template>
 
-<style>
+<style lang="scss">
 .flex {
   display: flex;
 }
@@ -45,5 +45,67 @@ initTheme()
   height: 40px;
   line-height: 40px;
   margin-left: 15px;
+}
+
+/*表单样式*/
+.el-form.query,
+.el-form.edit {
+  .el-row {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    display: flex;
+    flex-wrap: wrap;
+    //overflow: hidden;
+  }
+
+  .el-form-item {
+    display: flex;
+    align-items: center;
+
+    //margin-right: 15px !important;
+    .el-form-item__label {
+      overflow: hidden;
+      //height: 36px;
+      font-size: 13px;
+      //text-align: center;
+      //text-overflow: ellipsis;
+      //white-space: nowrap;
+      line-height: 1.3;
+    }
+
+    .el-form-item__content {
+      flex: 1;
+      margin-left: 0 !important;
+      line-height: 40px !important;
+
+      //height: 40px;
+      .el-select {
+        width: 100% !important;
+      }
+
+      .el-cascader {
+        width: 100% !important;
+      }
+
+      .el-input-number {
+        width: 100% !important;
+      }
+
+      .el-date-editor {
+        width: 100% !important;
+      }
+    }
+
+  }
+}
+
+.el-form.query {
+  margin-bottom: 10px;
+  overflow: auto;
+  padding: 5px 5px 0;
+
+  .el-form-item {
+    margin-bottom: 10px;
+  }
 }
 </style>

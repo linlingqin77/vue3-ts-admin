@@ -150,12 +150,12 @@ getDepartmentsTree()
         <el-card>
             <el-form :model="searchFormData" class="demo-form-inline" label-width="auto" v-show="isShowSearchForm">
                 <el-row align="middle">
-                    <el-col :xs="24" :sm="12" :md="8" :lg="4" :xl="4">
+                    <el-col :xs="24" :sm="12" :md="8" :lg="6" :xl="4.8">
                         <el-form-item label="部门名称" prop="name">
                             <el-input v-model="searchFormData.name" placeholder="请输入部门名称" clearable></el-input>
                         </el-form-item>
                     </el-col>
-                    <el-col :xs="24" :sm="12" :md="8" :lg="4" :xl="4">
+                    <el-col :xs="24" :sm="12" :md="8" :lg="6" :xl="4.8">
                         <el-form-item label="状态">
                             <el-select v-model="searchFormData.status" placeholder="部门状态" clearable>
                                 <el-option v-for="item in statusOptions" :key="item.value" :label="item.label"
@@ -163,7 +163,7 @@ getDepartmentsTree()
                             </el-select>
                         </el-form-item>
                     </el-col>
-                    <el-col :xs="24" :sm="12" :md="8" :lg="4" :xl="4">
+                    <el-col :xs="24" :sm="12" :md="8" :lg="6" :xl="4.8">
                         <el-form-item style="margin-left: 30px">
                             <el-button type="primary" @click="searchBtn">搜索</el-button>
                             <el-button type="primary" @click="resetSearch">重置</el-button>
@@ -207,7 +207,7 @@ getDepartmentsTree()
                         <template #default="scope">
                             <el-tag :type="scope.row.status == 0 ? 'success' : 'danger'">{{
                                 scope.row.status == 0 ? "正常" : "停用"
-                            }}</el-tag>
+                                }}</el-tag>
                         </template>
                     </el-table-column>
 

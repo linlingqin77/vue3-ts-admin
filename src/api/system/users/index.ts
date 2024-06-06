@@ -2,8 +2,8 @@ import { request } from "@/utils/service"
 import * as User from "./types"
 
 // 获取用户列表
-export function getUserListApi(data: User.GetUserListRequestData) {
-  return request({
+export function getUserListApi(data: User.GetUserListRequestParams) {
+  return request<User.GetUserListResponseData>({
     url: "/user/list",
     method: "post",
     data

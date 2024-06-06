@@ -2,7 +2,7 @@ import { request } from "@/utils/service"
 import * as Partment from "./types/index"
 // 获取部门列表
 export const getDepartmentDataApi = (params: Partment.GetDepartmentRequestParams) => {
-  return request<Partment.GetDepartmentRequestData>({
+  return request<Partment.GetDepartmentResponseData>({
     url: "/system/department/list",
     method: "get",
     params
@@ -11,7 +11,7 @@ export const getDepartmentDataApi = (params: Partment.GetDepartmentRequestParams
 // 查询单个部门
 
 export const getDepartmentByIdApi = (id: number) => {
-  return request<Partment.GetDepartmentRequestData>({
+  return request<Partment.GetDepartmentResponseData>({
     url: `/system/department/${id}`,
     method: "get"
   })
@@ -19,7 +19,7 @@ export const getDepartmentByIdApi = (id: number) => {
 
 // 修改部门
 export const updateDepartmentApi = (data: Partment.UpdateDepartmentRequestData) => {
-  return request<Partment.GetDepartmentRequestData>({
+  return request<Partment.GetDepartmentResponseData>({
     url: "/system/department/update",
     method: "post",
     data
