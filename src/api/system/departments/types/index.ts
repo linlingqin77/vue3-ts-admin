@@ -18,6 +18,7 @@ export type GetDepartmentRequestParams = {
   pageSize?: number
   name?: string
   status?: string
+  all?: number
 }
 export type GetDepartmentResponseData = ApiResponseData<{
   list: DepartmentResponseData[]

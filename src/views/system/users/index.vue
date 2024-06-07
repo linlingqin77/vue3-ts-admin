@@ -17,7 +17,7 @@ interface searchFormDataType extends Partial<User.IUser> {
 const searchFormData = reactive<searchFormDataType>({
   time: [],
   nickname: "",
-  is_disable: "",
+  status: "",
   phone: "",
   page: 1,
   pageSize: 10,
@@ -66,7 +66,7 @@ const getUserList = async () => {
   try {
     const data = {
       nickname: searchFormData.nickname,
-      is_disable: searchFormData.is_disable,
+      status: searchFormData.status,
       phone: searchFormData.phone,
       page: searchFormData.page,
       pageSize: searchFormData.pageSize,
@@ -134,7 +134,7 @@ const resetSearch = async () => {
 // 表格列筛选
 const tableColumns = ref([
   { label: "用户编号", prop: "id", key: "id", visible: true, align: "center" },
-  { label: "用户名称", prop: "nickname", key: "nickname", visible: true, align: "center" },
+  { label: "用户名称", prop: "username", key: "username", visible: true, align: "center" },
   { label: "部门", prop: "department_name", key: "department_name", visible: true, align: "center" },
   { label: "手机号", prop: "phone", key: 'phone', visible: true, align: "center" },
   { label: "状态", prop: "is_disable", key: 'slot', visible: true, align: "center" },
@@ -196,8 +196,8 @@ getTreeData()
               </el-form-item>
             </el-col>
             <el-col :xs="24" :sm="12" :md="8" :lg="6" :xl="4.8">
-              <el-form-item label="状态" prop="is_disable">
-                <el-select v-model="searchFormData.is_disable" placeholder="用户状态" clearable>
+              <el-form-item label="状态" prop="status">
+                <el-select v-model="searchFormData.status" placeholder="用户状态" clearable>
                   <el-option v-for="item in statusOptions" :key="item.value" :label="item.label" :value="item.value" />
                 </el-select>
               </el-form-item>
@@ -273,7 +273,8 @@ getTreeData()
             @current-change="handleCurrentChange" />
         </el-row>
 
-
+        <AddUpdateDialog v-model:visible="showAddUpdateDialog" :title="dialogTitle" :data="dialogData"
+          :type="dialogType" @add="getUserList" @edit="getUserList" />
       </el-col>
     </el-row>
   </el-card>

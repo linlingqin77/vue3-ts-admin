@@ -5,13 +5,17 @@ export interface IPosition {
   code: string
   status: string
   remark: string
+  create_time: string
+  update_time: string
 }
 // 查询
-export type GetPositionRequestParams = {
-  page: number
-  pageSize: number
-  name: string
-  status: string
+export type IGetPositionRequestParams = {
+  page?: number
+  pageSize?: number
+  name?: string
+  status?: string
+  code?: string
+  all?: number
 }
 export type GetPositionResponseData = ApiResponseData<{
   list: IPosition[]

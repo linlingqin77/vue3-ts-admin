@@ -1,17 +1,19 @@
 export interface IUser {
   id: number
+  sex: string
   phone: string
   email: string
   nickname: string
+  username: string
   password: string
-  avatar: string
-  intro: string
-  website: string
-  is_disable: string
-  is_subscribe: string
+  // avatar: string
+  remarks: string
+  // website: string
+  status: string
+  // is_subscribe: string
   position_id: number
   department_id: number
-  roleIds: number[]
+  role_ids: number[]
 }
 
 export interface CreateOrUpdateUserRequestData extends Partial<IUser> {}

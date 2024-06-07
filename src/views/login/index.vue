@@ -22,16 +22,16 @@ const loading = ref(false)
 const codeUrl = ref("")
 /** 登录表单数据 */
 const loginFormData: LoginRequestData = reactive({
-  nickname: "七七1",
-  password: "12345678",
+  username: "七七",
+  password: "123456",
   code: ""
 })
 /** 登录表单校验规则 */
 const loginFormRules: FormRules = {
-  nickname: [{ required: true, message: "请输入用户名", trigger: "blur" }],
+  username: [{ required: true, message: "请输入用户名", trigger: "blur" }],
   password: [
     { required: true, message: "请输入密码", trigger: "blur" },
-    { min: 8, max: 16, message: "长度在 8 到 16 个字符", trigger: "blur" }
+    { min: 5, max: 16, message: "长度在 8 到 16 个字符", trigger: "blur" }
   ],
   code: [{ required: true, message: "请输入验证码", trigger: "blur" }]
 }
@@ -84,8 +84,8 @@ createCode()
       </div>
       <div class="content">
         <el-form ref="loginFormRef" :model="loginFormData" :rules="loginFormRules" @keyup.enter="handleLogin">
-          <el-form-item prop="nickname">
-            <el-input v-model.trim="loginFormData.nickname" placeholder="用户名" type="text" tabindex="1"
+          <el-form-item prop="username">
+            <el-input v-model.trim="loginFormData.username" placeholder="用户名" type="text" tabindex="1"
               :prefix-icon="User" size="large" />
           </el-form-item>
           <el-form-item prop="password">
