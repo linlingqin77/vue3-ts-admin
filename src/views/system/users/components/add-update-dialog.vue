@@ -146,12 +146,12 @@ const closeDialog = () => {
             <el-input v-model="formData.email"></el-input>
           </el-form-item>
         </el-col>
-        <el-col :span="12">
+        <el-col :span="12" v-if="props.type == 'add'">
           <el-form-item label="用户名称" prop="username">
             <el-input v-model="formData.username"></el-input>
           </el-form-item>
         </el-col>
-        <el-col :span="12">
+        <el-col :span="12" v-if="props.type == 'add'">
           <el-form-item label="用户密码" prop="password">
             <el-input v-model="formData.password" type="password"></el-input>
           </el-form-item>

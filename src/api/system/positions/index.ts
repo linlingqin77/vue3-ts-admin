@@ -21,7 +21,16 @@ export const updatePositionApi = (data: Position.UpdatePositionRequestData) => {
 // 删除岗位
 export const deletePositionApi = (id: number) => {
   return request({
-    url: `/system/position/delete${id}`,
+    url: `/system/position/delete/${id}`,
     method: "get"
+  })
+}
+
+// 添加岗位
+export const addPositionApi = (data: Position.CreatePositionRequestParmas) => {
+  return request({
+    url: "/system/position/add",
+    method: "post",
+    data
   })
 }

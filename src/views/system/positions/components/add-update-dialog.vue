@@ -1,24 +1,16 @@
 <script lang="ts" setup>
-import { ref, watch, PropType, reactive, nextTick } from "vue"
+import { ref, watch, reactive } from "vue"
 import { ElForm, ElMessage } from "element-plus"
 import type { FormInstance, FormRules } from "element-plus"
-import * as Departments from "@/api/system/departments/types"
+import * as Positions from "@/api/system/positions/types"
 import { IdialogProps } from "../types"
-import { getDepartmentDataApi, addDepartmentApi, updateDepartmentApi } from "@/api/system/departments"
-
-import IconSelect from "@/components/IconSelect/index.vue"
-// const props = defineProps({
-//   visible: { type: Boolean, default: false },
-//   title: { type: String, default: "新增部门" },
-//   type: { type: string },
-//   data: { type: Object as PropType<Departments.IDepartment>, default: () => {} }
-// })
+import { getPositionListApi, addPositionApi, updatePositionApi } from "@/api/system/positions"
 const props = defineProps<IdialogProps>()
 
-const rules = reactive<FormRules<typeof formData>>({
-  parent_id: [{ required: true, message: "请选择上级部门", trigger: "change" }],
-  name: [{ required: true, message: "请输入部门名称", trigger: "blur" }],
-  order: [{ required: true, message: "请输入部门排序", trigger: "blur" }],
+const rules = reactive<FormRules<typeof props.data>>({
+  name: [{ required: true, message: "请输入岗位名称", trigger: "blur" }],
+  code: [{ required: true, message: "请输入岗位编码", trigger: "blur" }],
+  order: [{ required: true, message: "请输入岗位排序", trigger: "blur" }],
 })
 const visible = defineModel("visible", {
   type: Boolean,
@@ -27,42 +19,19 @@ const visible = defineModel("visible", {
 const emits = defineEmits(["add", "edit"])
 
 const form = ref<FormInstance>()
-const formData = ref<Departments.IDepartment>({
-  id: 0,
-  name: "",
-  order: 0,
-  parent_id: 0,
-  status: "0",
-  leader: "",
-  phone: "",
-  email: "",
-})
+
 const resetForm = (formEl: FormInstance | undefined) => {
   if (!formEl) return
   formEl.resetFields()
 
   console.log("重置表单")
 }
-const menusList = ref<Departments.IDepartment[]>([])
+const menusList = ref<Positions.IPosition[]>([])
 const getMenusTree = async () => {
-  const res = await getDepartmentDataApi({})
+  const res = await getPositionListApi({})
   menusList.value = res.data.list
 }
 getMenusTree()
-
-watch(
-  () => props.data,
-  (newVal, oldVal) => {
-    console.log(newVal, oldVal);
-
-    if (newVal) {
-      formData.value = { ...newVal }
-    } else {
-      // formData.value = { ...oldVal }
-      // resetForm(form.value)
-    }
-  }
-)
 
 // 确定
 const confirm = async (formEl: FormInstance | undefined) => {
@@ -71,13 +40,13 @@ const confirm = async (formEl: FormInstance | undefined) => {
     if (valid) {
       switch (props.type) {
         case "add":
-          await addDepartmentApi(formData.value)
+          await addPositionApi(props.data)
           ElMessage.success("新增成功")
           emits("add")
           visible.value = false
           break
         case "edit":
-          await updateDepartmentApi(formData.value)
+          await updatePositionApi(props.data)
           ElMessage.success("修改成功")
           emits("edit")
           visible.value = false
@@ -88,54 +57,44 @@ const confirm = async (formEl: FormInstance | undefined) => {
     }
   })
 }
-const closeDialog = () => {
-  resetForm(form.value)
-}
+
 </script>
 
 <template>
   <el-dialog v-model="visible" :title="props.title" width="600px" destroy-on-close>
-    <el-form ref="form" :model="formData" label-width="80px" :rules="rules">
+    <el-form ref="form" :model="props.data" label-width="80px" :rules="rules">
       <el-row>
-        <el-col :span="24">
-          <el-form-item label="上级部门" prop="parent_id">
-            <el-tree-select v-model="formData.parent_id" :data="menusList" :render-after-expand="false"
-              style="width: 240px" :props="{ label: 'name', value: 'id' }" node-key="id" :check-strictly="true" />
+
+        <el-col :span="12">
+          <el-form-item label="岗位名称" prop="name">
+            <el-input v-model="props.data.name"></el-input>
           </el-form-item>
         </el-col>
         <el-col :span="12">
-          <el-form-item label="部门名称" prop="name">
-            <el-input v-model="formData.name"></el-input>
+          <el-form-item label="岗位编码" prop="code">
+            <el-input v-model="props.data.code"></el-input>
           </el-form-item>
         </el-col>
         <el-col :span="12">
-          <el-form-item label="显示排序" prop="order">
-            <el-input v-model="formData.order" type="number"></el-input>
+          <el-form-item label="岗位排序" prop="order">
+            <el-input v-model="props.data.order" type="number"></el-input>
           </el-form-item>
         </el-col>
         <el-col :span="12">
-          <el-form-item label="负责人" prop="leader">
-            <el-input v-model="formData.leader"></el-input>
-          </el-form-item>
-        </el-col>
-        <el-col :span="12">
-          <el-form-item label="联系电话" prop="phone">
-            <el-input v-model="formData.phone"></el-input>
-          </el-form-item>
-        </el-col>
-        <el-col :span="12">
-          <el-form-item label="邮箱" prop="email">
-            <el-input v-model="formData.email"></el-input>
-          </el-form-item>
-        </el-col>
-        <el-col :span="12">
-          <el-form-item label="部门状态" prop="status">
-            <el-radio-group v-model="formData.status">
+          <el-form-item label="岗位状态" prop="status">
+            <el-radio-group v-model="props.data.status">
               <el-radio :value="'0'">正常</el-radio>
               <el-radio :value="'1'">停用</el-radio>
             </el-radio-group>
           </el-form-item>
         </el-col>
+        <el-col :span="12">
+          <el-form-item label="备注" prop="remark">
+            <el-input v-model="props.data.remark"></el-input>
+          </el-form-item>
+        </el-col>
+
+
       </el-row>
     </el-form>
 
@@ -143,6 +102,7 @@ const closeDialog = () => {
       <div class="dialog-footer">
         <el-button @click="() => visible = false">取消</el-button>
         <el-button type="primary" @click="confirm(form)">确定</el-button>
+        <el-button type="primary" @click="resetForm(form)">重置</el-button>
       </div>
     </template>
   </el-dialog>

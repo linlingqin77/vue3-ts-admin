@@ -97,6 +97,15 @@ export const constantRoutes: RouteRecordRaw[] = [
           title: "部门管理",
           svgIcon: "dashboard"
         }
+      },
+      {
+        path: "position",
+        component: () => import("@/views/system/positions/index.vue"),
+        name: "position",
+        meta: {
+          title: "岗位管理",
+          svgIcon: "dashboard"
+        }
       }
     ]
   },

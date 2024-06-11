@@ -1,11 +1,10 @@
 <script lang="ts" setup>
-import { ref, reactive, unref } from "vue"
+import { ref, reactive, unref, nextTick } from "vue"
 import { getDepartmentDataApi, deleteDepartmentApi } from "@/api/system/departments"
 import AddUpdateDialog from "./components/add-update-dialog.vue"
 import * as Department from '@/api/system/departments/types'
 import { IdialogProps, IdialogTitle, IdialogType, IdialogData } from "./types/index"
 import { ElMessage, TableInstance, ClickOutside as vClickOutside } from "element-plus"
-
 const searchFormData = reactive({
     name: "",
     status: "",
@@ -14,7 +13,16 @@ const searchFormData = reactive({
     total: 0
 })
 const dialogTitle = ref<IdialogTitle>("新增部门")
-const dialogData = ref<IdialogData>()
+const dialogData = ref<IdialogData>({
+    id: 0,
+    name: "",
+    order: 0,
+    parent_id: 0,
+    status: "0",
+    leader: "",
+    phone: "",
+    email: "",
+})
 const dialogType = ref<IdialogType>("add")
 const showAddUpdateDialog = ref(false)
 const statusOptions = [
@@ -70,33 +78,50 @@ const getDepartmentsTree = async () => {
 // 修改start
 const editBtn = (val: Department.IDepartment) => {
     dialogTitle.value = "编辑部门"
-    dialogData.value = val
+    // dialogData.value = val
     dialogType.value = "edit"
     showAddUpdateDialog.value = true
+    nextTick(() => {
+        dialogData.value = Object.assign(dialogData.value, val)
+    })
 }
 
 // 新增部门
 const addBtn = (val?: Department.IDepartment) => {
     dialogTitle.value = "新增部门"
-    dialogData.value = val
+    // dialogData.value = val
     dialogType.value = "add"
     showAddUpdateDialog.value = true
+    nextTick(() => {
+        dialogData.value = Object.assign(dialogData.value, {
+            id: 0,
+            name: "",
+            order: 0,
+            parent_id: 0,
+            status: "0",
+            leader: "",
+            phone: "",
+            email: "",
+        })
+    })
 }
 // 新增子部门
 const addChildrenBtn = (val: Department.UpdateDepartmentRequestData) => {
     dialogTitle.value = "新增部门"
-    dialogData.value = {
-        id: 0,
-        phone: "",
-        name: "",
-        order: 0,
-        leader: "",
-        parent_id: val.id || 0,
-        status: "0",
-        email: ""
-    }
     dialogType.value = "add"
     showAddUpdateDialog.value = true
+    nextTick(() => {
+        dialogData.value = Object.assign(dialogData.value, {
+            id: 0,
+            phone: "",
+            name: "",
+            order: 0,
+            leader: "",
+            parent_id: val.id || 0,
+            status: "0",
+            email: ""
+        })
+    })
 }
 
 // 删除

@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { ref, reactive, unref } from "vue"
-import { getUserListApi, deleteUserApi } from "@/api/system/users"
+import { getUserListApi, deleteUserApi, updateUserApi } from "@/api/system/users"
 import { getDepartmentDataApi } from "@/api/system/departments"
 import AddUpdateDialog from "./components/add-update-dialog.vue"
 import * as User from '@/api/system/users/types'
@@ -137,7 +137,7 @@ const tableColumns = ref([
   { label: "用户名称", prop: "username", key: "username", visible: true, align: "center" },
   { label: "部门", prop: "department_name", key: "department_name", visible: true, align: "center" },
   { label: "手机号", prop: "phone", key: 'phone', visible: true, align: "center" },
-  { label: "状态", prop: "is_disable", key: 'slot', visible: true, align: "center" },
+  { label: "状态", prop: "status", key: 'slot', visible: true, align: "center" },
   { label: "创建时间", prop: "create_time", key: 'create_time', visible: true, align: "center" }])
 const tableColumnsRef = ref()
 const tableColumnsPopoverRef = ref()
@@ -156,6 +156,19 @@ const showTableColumns = () => {
 }
 getUserList()
 
+// 更新用戶狀態
+const changeUserStatus = async (row: User.IUser, val: any) => {
+  try {
+    console.log(val, 'val;');
+    const newrows = { ...row }
+    newrows.status = val
+    const res = await updateUserApi(newrows)
+    ElMessage.success(res.msg)
+  } catch (error: any) {
+    ElMessage({ type: 'error', message: error })
+  }
+}
+
 
 // 部门树形-----------------
 const treeHandleNodeClick = (data: Department.GetDepartmentResponseData) => {
@@ -165,7 +178,7 @@ const treeHandleNodeClick = (data: Department.GetDepartmentResponseData) => {
 const treeData = ref<Department.DepartmentResponseData[]>()
 // 获取树形数据
 const getTreeData = async () => {
-  const res = await getDepartmentDataApi({})
+  const res = await getDepartmentDataApi({ all: 1 })
   treeData.value = res.data.list
 }
 const treeDefaultProps = {
@@ -180,7 +193,8 @@ getTreeData()
   <el-card>
     <el-row>
       <el-col :span="4">
-        <el-tree :data="treeData" :props="treeDefaultProps" @node-click="treeHandleNodeClick" />
+        <el-tree :data="treeData" :props="treeDefaultProps" @node-click="treeHandleNodeClick"
+          :default-expand-all="true" />
       </el-col>
       <el-col :span="20">
         <el-form :model="searchFormData" class="demo-form-inline" label-width="auto" v-show="isShowSearchForm">
@@ -219,7 +233,7 @@ getTreeData()
         <el-row flex="justify-between" style="margin-bottom: 10px;">
           <div class="flex justify-between">
             <el-button type="primary" plain icon="Plus" @click="addBtn()">新增</el-button>
-            <el-button type="info" plain icon="Plus" @click="expandBtn()">展开/折叠</el-button>
+            <!-- <el-button type="info" plain icon="Plus" @click="expandBtn()">展开/折叠</el-button> -->
           </div>
           <div class="flex justify-between">
             <el-button icon="Search" circle @click="isShowSearchForm = !isShowSearchForm" />
@@ -246,11 +260,15 @@ getTreeData()
 
 
             <el-table-column :prop="item.prop" :label="item.label"
-              v-if="item.key == 'slot' && item.prop == 'is_disable' && item.visible" :align="item.align">
+              v-if="item.key == 'slot' && item.prop == 'status' && item.visible" :align="item.align">
               <template #default="scope">
-                <el-tag :type="scope.row.is_disable == 0 ? 'success' : 'danger'">{{
-                  scope.row.is_disable == 0 ? "正常" : "停用"
-                }}</el-tag>
+                <!-- <el-tag :type="scope.row.status == '0' ? 'success' : 'danger'">{{
+                  scope.row.status == '0' ? "正常" : "停用"
+                }}</el-tag> -->
+
+                <el-switch v-model="scope.row.status" class="ml-2"
+                  style="--el-switch-on-color: #13ce66; --el-switch-off-color: #ff4949"
+                  @change="changeUserStatus(scope.row, $event)" active-value="0" inactive-value="1" />
               </template>
             </el-table-column>
 

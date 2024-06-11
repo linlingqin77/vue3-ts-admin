@@ -24,3 +24,5 @@ export type GetUserListResponseData = ApiResponseData<{
   page: number
 }>
 export type GetUserListRequestParams = {}
+
+export type UpdateUserListResponseData = ApiResponseData<{}>

@@ -16,10 +16,10 @@ export interface IMenus {
   status: string
   create_time?: string
   update_time?: string
-  children?: IMenus[]
+  children: any
 }
 
-export interface CreateOrUpdateMenuRequestData extends Omit<IMenus, "id"> {
+export interface CreateOrUpdateMenuRequestData extends Omit<IMenus, "id" | "create_time" | "update_time" | "children"> {
   id?: number
 }
 

@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, reactive, unref } from "vue"
+import { ref, reactive, unref, nextTick } from "vue"
 import { getMenusTreeApi, deleteMenuApi, createMenuApi } from "@/api/system/menus"
 import { CreateOrUpdateMenuRequestData } from "@/api/system/menus/types"
 import AddUpdateDialog from "./components/add-update-dialog.vue"
@@ -15,7 +15,22 @@ const searchFormData = reactive({
   total: 0
 })
 const dialogTitle = ref<IdialogTitle>("新增菜单")
-const dialogData = ref<IdialogData>()
+const dialogData = ref<IdialogData>({
+  name: "",
+  order: 0,
+  parent_id: 0,
+  type: "1",
+  icon: "",
+  component: "",
+  router_path: "",
+  router_params: "",
+  create_by: "",
+  permission: "",
+  is_frame: "0",
+  is_cache: "0",
+  visible: "0",
+  status: "0"
+})
 const dialogType = ref<IdialogType>("add")
 const showAddUpdateDialog = ref(false)
 const statusOptions = [
@@ -71,17 +86,38 @@ const getMenusTree = async () => {
 // 修改start
 const editBtn = (val: Menus.IMenus) => {
   dialogTitle.value = "编辑菜单"
-  dialogData.value = val
+  // dialogData.value = val
   dialogType.value = "edit"
   showAddUpdateDialog.value = true
+  nextTick(() => {
+    dialogData.value = Object.assign(dialogData.value, val)
+  })
 }
 
 // 新增菜单
 const addBtn = (val?: Menus.IMenus) => {
   dialogTitle.value = "新增菜单"
-  dialogData.value = val
+  // dialogData.value = val
   dialogType.value = "add"
   showAddUpdateDialog.value = true
+  nextTick(() => {
+    dialogData.value = Object.assign(dialogData.value, {
+      name: "",
+      order: 0,
+      parent_id: 0,
+      type: "1",
+      icon: "",
+      component: "/aaa.vue",
+      router_path: "/a/b/c",
+      router_params: "",
+      create_by: "",
+      permission: "perms-1",
+      is_frame: "0",
+      is_cache: "0",
+      visible: "0",
+      status: "0"
+    })
+  })
 }
 // 新增子菜单
 const addChildrenBtn = (val: Menus.CreateOrUpdateMenuRequestData) => {

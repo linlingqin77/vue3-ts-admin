@@ -1,12 +1,12 @@
 export interface IPosition {
   id: number
   name: string
-  order: string
+  order: number
   code: string
   status: string
   remark: string
-  create_time: string
-  update_time: string
+  create_time?: string
+  update_time?: string
 }
 // 查询
 export type IGetPositionRequestParams = {
@@ -24,7 +24,7 @@ export type GetPositionResponseData = ApiResponseData<{
   pageSize: number
 }>
 // 新增
-export type CreatePositionRequestData = Omit<IPosition, "id">
+export type CreatePositionRequestParmas = Omit<IPosition, "id" | "create_time" | "update_time">
 export type CreatePositionResponseData = ApiResponseData<IPosition>
 // 更新
 export type UpdatePositionRequestData = IPosition

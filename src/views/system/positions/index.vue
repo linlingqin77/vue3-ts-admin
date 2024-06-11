@@ -1,10 +1,11 @@
 <script lang="ts" setup>
-import { ref, reactive, unref } from "vue"
-import { getDepartmentDataApi, deleteDepartmentApi } from "@/api/system/departments"
+import { ref, reactive, unref, nextTick } from "vue"
+import { getPositionListApi, deletePositionApi } from "@/api/system/positions"
 import AddUpdateDialog from "./components/add-update-dialog.vue"
-import * as Department from '@/api/system/departments/types'
+import * as Position from '@/api/system/positions/types'
 import { IdialogProps, IdialogTitle, IdialogType, IdialogData } from "./types/index"
 import { ElMessage, TableInstance, ClickOutside as vClickOutside } from "element-plus"
+
 
 const searchFormData = reactive({
     name: "",
@@ -13,8 +14,15 @@ const searchFormData = reactive({
     pageSize: 10,
     total: 0
 })
-const dialogTitle = ref<IdialogTitle>("新增部门")
-const dialogData = ref<IdialogData>()
+const dialogTitle = ref<IdialogTitle>("新增岗位")
+const dialogData = ref<IdialogData>({
+    id: 0,
+    name: "",
+    order: 0,
+    code: '',
+    status: "0",
+    remark: ""
+})
 const dialogType = ref<IdialogType>("add")
 const showAddUpdateDialog = ref(false)
 const statusOptions = [
@@ -22,28 +30,28 @@ const statusOptions = [
     { label: "停用", value: 1 }
 ]
 
-const tableData = ref<Department.DepartmentResponseData[]>([])
+const tableData = ref<Position.IPosition[]>([])
 const tableRef = ref<TableInstance>()
 const isTableExpand = ref<boolean>(true) //是否展开
 
 // 展开 收缩
-const expandBtn = () => {
-    isTableExpand.value = !isTableExpand.value
-    tableRef.value?.store.states.expandRows.value.forEach((row: any) => {
-        tableRef.value?.toggleRowExpansion(row)
-    })
-    console.log(isTableExpand.value, "isTableExpand")
-}
+// const expandBtn = () => {
+//     isTableExpand.value = !isTableExpand.value
+//     tableRef.value?.store.states.expandRows.value.forEach((row: any) => {
+//         tableRef.value?.toggleRowExpansion(row)
+//     })
+//     console.log(isTableExpand.value, "isTableExpand")
+// }
 // 分页
 const handlePageSizeChange = async (val: number) => {
     searchFormData.pageSize = val
-    await getDepartmentsTree()
+    await getPositionsList()
     console.log(val, "val");
 
 }
 const handleCurrentChange = async (val: number) => {
     searchFormData.page = val
-    await getDepartmentsTree()
+    await getPositionsList()
     console.log(val, "val");
 }
 
@@ -52,10 +60,10 @@ const isShowSearchForm = ref<boolean>(true)
 
 // 获取数据
 const tableLoad = ref<boolean>(false)
-const getDepartmentsTree = async () => {
+const getPositionsList = async () => {
     try {
         tableLoad.value = true
-        const res = await getDepartmentDataApi(searchFormData)
+        const res = await getPositionListApi(searchFormData)
         tableLoad.value = false
         searchFormData.total = res.data.total
         console.log(res, 'res');
@@ -68,65 +76,62 @@ const getDepartmentsTree = async () => {
 
 
 // 修改start
-const editBtn = (val: Department.IDepartment) => {
-    dialogTitle.value = "编辑部门"
-    dialogData.value = val
+const editBtn = (val: Position.IPosition) => {
+    dialogTitle.value = "编辑岗位"
     dialogType.value = "edit"
     showAddUpdateDialog.value = true
+    nextTick(() => {
+        dialogData.value = Object.assign(dialogData.value, val)
+    })
 }
 
-// 新增部门
-const addBtn = (val?: Department.IDepartment) => {
-    dialogTitle.value = "新增部门"
-    dialogData.value = val
+// 新增岗位
+const addBtn = () => {
+    dialogTitle.value = "新增岗位"
     dialogType.value = "add"
     showAddUpdateDialog.value = true
-}
-// 新增子部门
-const addChildrenBtn = (val: Department.UpdateDepartmentRequestData) => {
-    dialogTitle.value = "新增部门"
-    dialogData.value = {
-        id: 0,
-        phone: "",
-        name: "",
-        order: 0,
-        leader: "",
-        parent_id: val.id || 0,
-        status: "0",
-        email: ""
-    }
-    dialogType.value = "add"
-    showAddUpdateDialog.value = true
-}
+    nextTick(() => {
+        dialogData.value = Object.assign(dialogData.value, {
+            id: 0,
+            name: "",
+            order: 0,
+            code: '',
+            status: "0",
+            remark: ""
+        })
+    })
 
+}
 // 删除
 const deleteBtn = async (id: number) => {
-    await deleteDepartmentApi(id)
+    await deletePositionApi(id)
     ElMessage({ message: "删除成功", type: "success" })
-    await getDepartmentsTree()
+    await getPositionsList()
 }
 // 搜索按钮
 const searchBtn = async () => {
     searchFormData.page = 1
-    await getDepartmentsTree()
+    await getPositionsList()
     console.log("submit!")
 }
 // 重置按钮
 const resetSearch = async () => {
     searchFormData.name = ""
     searchFormData.status = ""
-    await getDepartmentsTree()
+    await getPositionsList()
     console.log("reset!")
 }
 // 表格列筛选
 const tableColumns = ref([
-    { label: "部门名称", prop: "name", key: "name", visible: true, align: "left" },
-    { label: "排序", prop: "order", key: "order", visible: true, align: "center" },
+    { label: "岗位编号", prop: "id", key: "id", visible: true, align: "center" },
+    { label: "岗位编码", prop: "code", key: "code", visible: true, align: "center" },
+    { label: "岗位名称", prop: "name", key: "name", visible: true, align: "center" },
+    { label: "岗位排序", prop: "order", key: "order", visible: true, align: "center" },
     { label: "状态", prop: "status", key: 'slot', visible: true, align: "center" },
     { label: "创建时间", prop: "create_time", key: 'create_time', visible: true, align: "center" }])
 const tableColumnsRef = ref()
 const tableColumnsPopoverRef = ref()
-const tableColumnsValue = ref(['name', 'order', 'status', 'create_time'])
+const tableColumnsValue = ref(['id', 'code', 'name', 'order', 'status', 'create_time'])
 const tableColumnsDataChange = () => {
     tableColumns.value.forEach((val: any) => {
         if (tableColumnsValue.value.includes(val.prop)) {
@@ -139,9 +144,7 @@ const tableColumnsDataChange = () => {
 const showTableColumns = () => {
     unref(tableColumnsPopoverRef).popperRef?.delayHide?.()
 }
-getDepartmentsTree()
-
-
+getPositionsList()
 
 </script>
 
@@ -151,13 +154,13 @@ getDepartmentsTree()
             <el-form :model="searchFormData" class="demo-form-inline" label-width="auto" v-show="isShowSearchForm">
                 <el-row align="middle">
                     <el-col :xs="24" :sm="12" :md="8" :lg="6" :xl="4.8">
-                        <el-form-item label="部门名称" prop="name">
-                            <el-input v-model="searchFormData.name" placeholder="请输入部门名称" clearable></el-input>
+                        <el-form-item label="岗位名称" prop="name">
+                            <el-input v-model="searchFormData.name" placeholder="请输入岗位名称" clearable></el-input>
                         </el-form-item>
                     </el-col>
                     <el-col :xs="24" :sm="12" :md="8" :lg="6" :xl="4.8">
                         <el-form-item label="状态">
-                            <el-select v-model="searchFormData.status" placeholder="部门状态" clearable>
+                            <el-select v-model="searchFormData.status" placeholder="岗位状态" clearable>
                                 <el-option v-for="item in statusOptions" :key="item.value" :label="item.label"
                                     :value="item.value" />
                             </el-select>
@@ -174,12 +177,15 @@ getDepartmentsTree()
 
             <el-row flex="justify-between" style="margin-bottom: 10px;">
                 <div class="flex justify-between">
-                    <el-button type="primary" plain icon="Plus" @click="addBtn()">新增</el-button>
-                    <el-button type="info" plain icon="Plus" @click="expandBtn()">展开/折叠</el-button>
+                    <el-button type="primary" plain icon="Plus" @click="addBtn">新增</el-button>
+                    <!-- <el-button type="primary" plain icon="Edit" @click="">修改</el-button>
+                    <el-button type="primary" plain icon="Delete" @click="">删除</el-button>
+                    <el-button type="primary" plain icon="Export" @click="">导出</el-button> -->
+                    <!-- <el-button type="info" plain icon="Plus" @click="expandBtn()">展开/折叠</el-button> -->
                 </div>
                 <div class="flex justify-between">
                     <el-button icon="Search" circle @click="isShowSearchForm = !isShowSearchForm" />
-                    <el-button icon="Refresh" circle @click="getDepartmentsTree" />
+                    <el-button icon="Refresh" circle @click="getPositionsList" />
                     <el-tooltip class="item" effect="dark" content="显隐列" placement="top">
                         <el-button circle icon="Menu" ref="tableColumnsRef" v-click-outside="showTableColumns" />
                     </el-tooltip>
@@ -194,30 +200,26 @@ getDepartmentsTree()
             </el-row>
 
             <!-- 表格 -->
-            <el-table :data="tableData" style="width: 100%" row-key="id" border :tree-props="{ children: 'children' }"
-                :default-expand-all="isTableExpand" ref="tableRef" v-loading="tableLoad">
+            <el-table :data="tableData" style="width: 100%" row-key="id" border ref="tableRef" v-loading="tableLoad">
                 <template v-for="item in tableColumns">
                     <el-table-column :prop="item.prop" :label="item.label" v-if="item.key !== 'slot' && item.visible"
                         :align="item.align">
                     </el-table-column>
-
-
                     <el-table-column :prop="item.prop" :label="item.label"
                         v-if="item.key == 'slot' && item.prop == 'status' && item.visible" :align="item.align">
                         <template #default="scope">
                             <el-tag :type="scope.row.status == 0 ? 'success' : 'danger'">{{
                                 scope.row.status == 0 ? "正常" : "停用"
-                                }}</el-tag>
+                            }}</el-tag>
                         </template>
                     </el-table-column>
-
                 </template>
                 <el-table-column label="操作" align="center" width="300px">
                     <template #default="scope">
                         <el-button :text="true" icon="edit" type="primary" size="small"
                             @click="editBtn(scope.row)">修改</el-button>
-                        <el-button :text="true" icon="Plus" type="primary" size="small"
-                            @click="addChildrenBtn(scope.row)">新增</el-button>
+                        <!-- <el-button :text="true" icon="Plus" type="primary" size="small"
+                            @click="addChildrenBtn(scope.row)">新增</el-button> -->
                         <el-button :text="true" icon="delete" type="primary" size="small"
                             @click="deleteBtn(scope.row.id)">删除</el-button>
                     </template>
@@ -234,7 +236,7 @@ getDepartmentsTree()
         </el-card>
 
         <AddUpdateDialog v-model:visible="showAddUpdateDialog" :title="dialogTitle" :data="dialogData"
-            :type="dialogType" @add="getDepartmentsTree" @edit="getDepartmentsTree" />
+            :type="dialogType" @add="getPositionsList" @edit="getPositionsList" />
     </div>
 </template>
 

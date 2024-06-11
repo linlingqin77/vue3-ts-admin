@@ -12,7 +12,7 @@ export function getUserListApi(data: User.GetUserListRequestParams) {
 
 // 修改用户
 export function updateUserApi(data: User.CreateOrUpdateUserRequestData) {
-  return request({
+  return request<User.UpdateUserListResponseData>({
     url: "/user/update",
     method: "post",
     data
