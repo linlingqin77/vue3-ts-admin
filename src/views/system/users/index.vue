@@ -137,7 +137,7 @@ const tableColumns = ref([
   { label: "用户名称", prop: "username", key: "username", visible: true, align: "center" },
   { label: "部门", prop: "department_name", key: "department_name", visible: true, align: "center" },
   { label: "手机号", prop: "phone", key: 'phone', visible: true, align: "center" },
-  { label: "状态", prop: "is_disable", key: 'slot', visible: true, align: "center" },
+  { label: "状态", prop: "status", key: 'slot', visible: true, align: "center" },
   { label: "创建时间", prop: "create_time", key: 'create_time', visible: true, align: "center" }])
 const tableColumnsRef = ref()
 const tableColumnsPopoverRef = ref()
@@ -246,10 +246,10 @@ getTreeData()
 
 
             <el-table-column :prop="item.prop" :label="item.label"
-              v-if="item.key == 'slot' && item.prop == 'is_disable' && item.visible" :align="item.align">
+              v-if="item.key == 'slot' && item.prop == 'status' && item.visible" :align="item.align">
               <template #default="scope">
-                <el-tag :type="scope.row.is_disable == 0 ? 'success' : 'danger'">{{
-                  scope.row.is_disable == 0 ? "正常" : "停用"
+                <el-tag :type="scope.row.status == '0' ? 'success' : 'danger'">{{
+                  scope.row.status == '0' ? "正常" : "停用"
                 }}</el-tag>
               </template>
             </el-table-column>
