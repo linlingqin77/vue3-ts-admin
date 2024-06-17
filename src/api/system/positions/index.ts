@@ -11,7 +11,7 @@ export const getPositionListApi = (params: Position.IGetPositionRequestParams) =
 
 // 修改岗位
 export const updatePositionApi = (data: Position.UpdatePositionRequestData) => {
-  return request<Position.UpdatePositionResponseData>({
+  return request<ApiResponseData<{}>>({
     url: "/system/position/update",
     method: "post",
     data
@@ -19,16 +19,19 @@ export const updatePositionApi = (data: Position.UpdatePositionRequestData) => {
 }
 
 // 删除岗位
-export const deletePositionApi = (id: number) => {
-  return request({
-    url: `/system/position/delete/${id}`,
-    method: "get"
+export const deletePositionApi = (id: number | number[]) => {
+  return request<ApiResponseData<{}>>({
+    url: `/system/position/delete`,
+    method: "get",
+    params: {
+      id
+    }
   })
 }
 
 // 添加岗位
 export const addPositionApi = (data: Position.CreatePositionRequestParmas) => {
-  return request({
+  return request<ApiResponseData<{}>>({
     url: "/system/position/add",
     method: "post",
     data

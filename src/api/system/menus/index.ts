@@ -4,6 +4,7 @@ import * as Menus from "./types"
 interface GetMenusTreeRequestData {
   name?: string
   status?: string
+  all?: number
 }
 export function getMenusTreeApi(params?: GetMenusTreeRequestData) {
   return request<Menus.GetMenusResponseData>({
@@ -15,7 +16,7 @@ export function getMenusTreeApi(params?: GetMenusTreeRequestData) {
 
 // 新增菜单
 export function createMenuApi(data: Menus.CreateOrUpdateMenuRequestData) {
-  return request({
+  return request<ApiResponseData<{}>>({
     url: "/system/menu/add",
     method: "post",
     data
@@ -25,7 +26,7 @@ export function createMenuApi(data: Menus.CreateOrUpdateMenuRequestData) {
 // 删除菜单
 
 export function deleteMenuApi(id: number) {
-  return request({
+  return request<ApiResponseData<{}>>({
     url: "/system/menu/delete",
     method: "post",
     params: { id }
@@ -34,7 +35,7 @@ export function deleteMenuApi(id: number) {
 // 编辑菜单
 
 export function updateMenuApi(data: Menus.CreateOrUpdateMenuRequestData) {
-  return request({
+  return request<ApiResponseData<{}>>({
     url: "/system/menu/update",
     method: "post",
     data

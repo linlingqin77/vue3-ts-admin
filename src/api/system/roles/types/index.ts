@@ -4,19 +4,27 @@ export interface IRole {
   code: string
   order: number
   status: string
-  create_time: string
-  update_time: string
+  notes: string
+  menus_ids: number[]
+  create_time?: string
+  update_time?: string
 }
-export type IGetRoleListApiRequestParams = {
+export interface IGetRoleListApiRequestParams extends Partial<IRole> {
+  // name?: string
+  // code?: string
+  // order?: number
+  // status?: string
   all?: number
-  name?: string
-  code?: string
-  order?: number
-  status?: string
   start_time?: string
   end_time?: string
   page?: number
   pageSize?: number
+}
+export interface IAddRoleApiRequestParams extends IRole {}
+export interface IUpdateRoleApiRequestParams extends IRole {}
+export type IAssignUserRolesApiRequestParams = {
+  user_ids: number[]
+  role_id: number
 }
 export type IGetRoleListApiResponseData = ApiResponseData<{
   list: IRole[]

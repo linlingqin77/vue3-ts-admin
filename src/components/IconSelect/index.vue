@@ -1,13 +1,7 @@
 <template>
   <div class="icon-select-container relative" :style="{ width }">
-    <el-input
-      v-if="type === 'input'"
-      v-model="selectValue"
-      placeholder="点击选择图标"
-      v-click-outside="clickOutside"
-      readonly
-      ref="selectRef"
-    >
+    <el-input v-if="type === 'input'" v-model="selectValue" placeholder="点击选择图标" v-click-outside="clickOutside" readonly
+      ref="selectRef">
       <template #prepend>
         <svg-icon :name="selectValue" />
       </template>
@@ -16,16 +10,8 @@
       <svg-icon :name="selectValue" />
       <span class="ml-4px">{{ selectValue || "点击选择图标" }}</span>
     </el-button>
-    <el-popover
-      shadow="none"
-      ref="popoverRef"
-      :virtual-ref="selectRef"
-      virtual-triggering
-      placement="bottom-end"
-      trigger="click"
-      :teleported="false"
-      :width="width"
-    >
+    <el-popover shadow="none" ref="popoverRef" :virtual-ref="selectRef" virtual-triggering placement="bottom-end"
+      trigger="click" :teleported="false" :width="width">
       <el-input v-model="searchValue" placeholder="输入名称搜索图标" />
       <el-divider border-style="dashed" />
       <el-scrollbar :height="scrollbarHeight">
@@ -46,7 +32,7 @@
 <script setup lang="ts">
 import { ClickOutside as vClickOutside } from "element-plus"
 import { useVModel } from "@vueuse/core"
-import { ref, unref, withDefaults, defineOptions, defineEmits, defineProps, computed } from "vue"
+import { ref, unref, withDefaults, defineOptions, computed } from "vue"
 defineOptions({
   name: "IconSelect"
 })

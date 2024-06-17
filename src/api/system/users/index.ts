@@ -11,8 +11,8 @@ export function getUserListApi(data: User.GetUserListRequestParams) {
 }
 
 // 修改用户
-export function updateUserApi(data: User.CreateOrUpdateUserRequestData) {
-  return request<User.UpdateUserListResponseData>({
+export function updateUserApi(data: User.CreateOrUpdateUserRequestParmas) {
+  return request<ApiResponseData<{}>>({
     url: "/user/update",
     method: "post",
     data
@@ -22,7 +22,7 @@ export function updateUserApi(data: User.CreateOrUpdateUserRequestData) {
 // 删除用户
 
 export function deleteUserApi(id: number) {
-  return request({
+  return request<ApiResponseData<{}>>({
     url: "/user/delete",
     method: "post",
     data: { id }
@@ -31,8 +31,8 @@ export function deleteUserApi(id: number) {
 
 // 新增用户
 
-export function createUserApi(data: User.CreateOrUpdateUserRequestData) {
-  return request({
+export function createUserApi(data: User.CreateOrUpdateUserRequestParmas) {
+  return request<ApiResponseData<{}>>({
     url: "/auth/register",
     method: "post",
     data

@@ -1,27 +1,21 @@
 <script lang="ts" setup>
-import { ref, watch, PropType, reactive, nextTick } from "vue"
+import { ref, watch, PropType, reactive, nextTick, onMounted } from "vue"
 import { ElForm, ElMessage } from "element-plus"
 import type { FormInstance, FormRules } from "element-plus"
 import * as Departments from "@/api/system/departments/types"
-import * as Users from "@/api/system/users/types"
 import * as Roles from "@/api/system/roles/types"
 import * as Positions from "@/api/system/positions/types"
-import { IdialogProps } from "../types"
+import { IdialogTitle, IdialogType, IdialogData } from "../types"
 import { getDepartmentDataApi } from "@/api/system/departments"
 import { getRoleListApi } from "@/api/system/roles"
 import { getPositionListApi } from "@/api/system/positions"
 import { createUserApi, updateUserApi } from "@/api/system/users"
-
-
-// import IconSelect from "@/components/IconSelect/index.vue"
-// const props = defineProps({
-//   visible: { type: Boolean, default: false },
-//   title: { type: String, default: "新增用户" },
-//   type: { type: string },
-//   data: { type: Object as PropType<Departments.IDepartment>, default: () => {} }
-// })
-const props = defineProps<IdialogProps>()
-
+const props = defineProps({
+  visible: { type: Boolean, default: false },
+  title: { type: String as PropType<IdialogTitle>, default: "新增用户" },
+  type: { type: String as PropType<IdialogType> },
+  data: { type: Object as PropType<IdialogData>, default: () => { } }
+})
 const rules = reactive<FormRules<typeof formData>>({
   username: [{ required: true, message: "请输入用户名称", trigger: "blur" }],
   nickname: [{ required: true, message: "请输入用户昵称", trigger: "blur" }],
@@ -34,25 +28,10 @@ const visible = defineModel("visible", {
 const emits = defineEmits(["add", "edit"])
 
 const form = ref<FormInstance>()
-const formData = ref<Partial<Users.IUser>>({
-  id: 0,
-  username: "",
-  sex: "",
-  phone: "",
-  email: "",
-  nickname: "",
-  password: "",
-  status: "0",
-  remarks: "",
-  department_id: undefined,
-  position_id: undefined,
-  role_ids: []
-})
+const formData = ref(props.data)
 const resetForm = (formEl: FormInstance | undefined) => {
   if (!formEl) return
   formEl.resetFields()
-
-  console.log("重置表单")
 }
 
 // 获取部门列表
@@ -61,36 +40,30 @@ const getDepartment = async () => {
   const res = await getDepartmentDataApi({ all: 1 })
   departmentList.value = res.data.list
 }
-getDepartment()
+
 // 获取角色列表
 const roleList = ref<Roles.IRole[]>([])
 const getRoleList = async () => {
   const res = await getRoleListApi({ all: 1 })
   roleList.value = res.data.list
 }
-getRoleList()
+
 // 获取岗位列表
 const positionList = ref<Positions.IPosition[]>([])
 const getPositionList = async () => {
   const res = await getPositionListApi({ all: 1 })
   positionList.value = res.data.list
 }
-getPositionList()
 
 
-watch(
-  () => props.data,
-  (newVal, oldVal) => {
-    console.log(newVal, oldVal);
-
-    if (newVal) {
-      formData.value = { ...newVal }
-    } else {
-      // formData.value = { ...oldVal }
-      // resetForm(form.value)
-    }
-  }
-)
+watch(() => props.data, (newVal) => {
+  if (newVal) formData.value = { ...newVal }
+})
+onMounted(() => {
+  getDepartment()
+  getRoleList()
+  getPositionList()
+})
 
 // 确定
 const confirm = async (formEl: FormInstance | undefined) => {
@@ -116,13 +89,11 @@ const confirm = async (formEl: FormInstance | undefined) => {
     }
   })
 }
-const closeDialog = () => {
-  resetForm(form.value)
-}
+
 </script>
 
 <template>
-  <el-dialog v-model="visible" :title="props.title" width="600px">
+  <el-dialog v-model="visible" :title="props.title" width="600px" @closed="resetForm(form)">
     <el-form ref="form" :model="formData" label-width="80px" :rules="rules">
       <el-row>
         <el-col :span="12">
@@ -174,8 +145,8 @@ const closeDialog = () => {
           </el-form-item>
         </el-col>
         <el-col :span="12">
-          <el-form-item label="岗位" prop="position_id">
-            <el-select v-model="formData.position_id" clearable placeholder="请选择岗位">
+          <el-form-item label="岗位" prop="position_ids">
+            <el-select v-model="formData.position_ids" multiple clearable placeholder="请选择岗位">
               <el-option v-for="item in positionList" :label="item.name" :value="item.id" />
             </el-select>
           </el-form-item>
@@ -188,8 +159,8 @@ const closeDialog = () => {
           </el-form-item>
         </el-col>
         <el-col :span="24">
-          <el-form-item label="备注" prop="remarks">
-            <el-input v-model="formData.remarks" type="textarea"></el-input>
+          <el-form-item label="备注" prop="notes">
+            <el-input v-model="formData.notes" type="textarea"></el-input>
           </el-form-item>
         </el-col>
 

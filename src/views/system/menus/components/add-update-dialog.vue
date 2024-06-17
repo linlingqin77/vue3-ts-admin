@@ -31,19 +31,21 @@ const getMenusTree = async () => {
 getMenusTree()
 // 确定
 const confirm = async (formEl: FormInstance | undefined) => {
+
   if (!formEl) return
+  let res = null
   formEl.validate(async (valid) => {
     if (valid) {
       switch (props.type) {
         case "add":
-          await createMenuApi(props.data)
-          ElMessage.success("新增成功")
+          res = await createMenuApi(props.data)
+          ElMessage.success(res.msg)
           emits("add")
           visible.value = false
           break
         case "edit":
-          await updateMenuApi(props.data)
-          ElMessage.success("修改成功")
+          res = await updateMenuApi(props.data)
+          ElMessage.success(res.msg)
           emits("edit")
           visible.value = false
           break

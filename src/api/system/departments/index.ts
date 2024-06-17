@@ -28,7 +28,7 @@ export const updateDepartmentApi = (data: Partment.UpdateDepartmentRequestData) 
 
 // 删除部门
 export const deleteDepartmentApi = (id: number) => {
-  return request({
+  return request<ApiResponseData<{}>>({
     url: `/system/department/delete/${id}`,
     method: "get"
   })
@@ -36,7 +36,7 @@ export const deleteDepartmentApi = (id: number) => {
 
 // 新增
 export const addDepartmentApi = (data: Partment.CreateDepartmentRequestData) => {
-  return request({
+  return request<ApiResponseData<{}>>({
     url: "/system/department/add",
     method: "post",
     data

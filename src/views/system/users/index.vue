@@ -1,14 +1,15 @@
 <script lang="ts" setup>
-import { ref, reactive, unref } from "vue"
+import { ref, reactive, unref, nextTick, onMounted } from "vue"
 import { getUserListApi, deleteUserApi, updateUserApi } from "@/api/system/users"
 import { getDepartmentDataApi } from "@/api/system/departments"
 import AddUpdateDialog from "./components/add-update-dialog.vue"
 import * as User from '@/api/system/users/types'
 import * as Department from '@/api/system/departments/types'
-import { IdialogProps, IdialogTitle, IdialogType, IdialogData } from "./types/index"
+import { IdialogTitle, IdialogType, IdialogData } from "./types/index"
 import { ElMessage, TableInstance, ClickOutside as vClickOutside } from "element-plus"
 
-interface searchFormDataType extends Partial<User.IUser> {
+
+interface searchFormDataType extends Partial<User.CreateOrUpdateUserRequestParmas> {
   time: string[],
   page: number,
   pageSize: number,
@@ -19,6 +20,7 @@ const searchFormData = reactive<searchFormDataType>({
   nickname: "",
   status: "",
   phone: "",
+  department_id: undefined,
   page: 1,
   pageSize: 10,
   total: 0
@@ -72,6 +74,7 @@ const getUserList = async () => {
       pageSize: searchFormData.pageSize,
       start_time: searchFormData.time[0] ?? '',
       end_time: searchFormData.time[0] ?? '',
+      department_id: searchFormData.department_id
     }
 
     tableLoad.value = true
@@ -90,28 +93,31 @@ const getUserList = async () => {
 // 修改start
 const editBtn = (val: User.IUser) => {
   dialogTitle.value = "编辑用户"
-  dialogData.value = val
   dialogType.value = "edit"
+  dialogData.value = val
   showAddUpdateDialog.value = true
 }
 
 // 新增用户
-const addBtn = (val?: User.IUser) => {
+const addBtn = () => {
   dialogTitle.value = "新增用户"
-  dialogData.value = val
   dialogType.value = "add"
+  dialogData.value = {
+    id: undefined,
+    username: "",
+    nickname: "",
+    password: "",
+    phone: "",
+    email: "",
+    status: '0',
+    notes: "",
+    department_id: undefined,
+    position_ids: [],
+    role_ids: [],
+    sex: ''
+  }
   showAddUpdateDialog.value = true
 }
-// 新增子用户
-const addChildrenBtn = (val: User.IUser) => {
-  dialogTitle.value = "新增用户"
-  // dialogData.value = {
-  //   // id: 0,
-  // }
-  dialogType.value = "add"
-  showAddUpdateDialog.value = true
-}
-
 // 删除
 const deleteBtn = async (id: number) => {
   await deleteUserApi(id)
@@ -135,13 +141,13 @@ const resetSearch = async () => {
 const tableColumns = ref([
   { label: "用户编号", prop: "id", key: "id", visible: true, align: "center" },
   { label: "用户名称", prop: "username", key: "username", visible: true, align: "center" },
-  { label: "部门", prop: "department_name", key: "department_name", visible: true, align: "center" },
+  { label: "部门", prop: "department.name", key: "department.name", visible: true, align: "center" },
   { label: "手机号", prop: "phone", key: 'phone', visible: true, align: "center" },
   { label: "状态", prop: "status", key: 'slot', visible: true, align: "center" },
   { label: "创建时间", prop: "create_time", key: 'create_time', visible: true, align: "center" }])
 const tableColumnsRef = ref()
 const tableColumnsPopoverRef = ref()
-const tableColumnsValue = ref(['name', 'order', 'status', 'create_time'])
+const tableColumnsValue = ref(["id", 'username', 'department.name', 'phone', 'status', 'create_time'])
 const tableColumnsDataChange = () => {
   tableColumns.value.forEach((val: any) => {
     if (tableColumnsValue.value.includes(val.prop)) {
@@ -154,10 +160,10 @@ const tableColumnsDataChange = () => {
 const showTableColumns = () => {
   unref(tableColumnsPopoverRef).popperRef?.delayHide?.()
 }
-getUserList()
+
 
 // 更新用戶狀態
-const changeUserStatus = async (row: User.IUser, val: any) => {
+const changeUserStatus = async (row: User.CreateOrUpdateUserRequestParmas, val: any) => {
   try {
     console.log(val, 'val;');
     const newrows = { ...row }
@@ -171,8 +177,10 @@ const changeUserStatus = async (row: User.IUser, val: any) => {
 
 
 // 部门树形-----------------
-const treeHandleNodeClick = (data: Department.GetDepartmentResponseData) => {
+const treeHandleNodeClick = (data: Department.IDepartment) => {
   console.log(data)
+  searchFormData.department_id = data.id
+  getUserList()
 }
 
 const treeData = ref<Department.DepartmentResponseData[]>()
@@ -185,7 +193,12 @@ const treeDefaultProps = {
   children: 'children',
   label: 'name',
 }
-getTreeData()
+
+
+onMounted(() => {
+  getUserList()
+  getTreeData()
+})
 
 </script>
 
@@ -232,7 +245,7 @@ getTreeData()
         </el-form>
         <el-row flex="justify-between" style="margin-bottom: 10px;">
           <div class="flex justify-between">
-            <el-button type="primary" plain icon="Plus" @click="addBtn()">新增</el-button>
+            <el-button type="primary" plain icon="Plus" @click="addBtn">新增</el-button>
             <!-- <el-button type="info" plain icon="Plus" @click="expandBtn()">展开/折叠</el-button> -->
           </div>
           <div class="flex justify-between">
@@ -276,8 +289,6 @@ getTreeData()
           <el-table-column label="操作" align="center" width="300px">
             <template #default="scope">
               <el-button :text="true" icon="edit" type="primary" size="small" @click="editBtn(scope.row)">修改</el-button>
-              <el-button :text="true" icon="Plus" type="primary" size="small"
-                @click="addChildrenBtn(scope.row)">新增</el-button>
               <el-button :text="true" icon="delete" type="primary" size="small"
                 @click="deleteBtn(scope.row.id)">删除</el-button>
             </template>

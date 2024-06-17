@@ -144,8 +144,8 @@ const addChildrenBtn = (val: Menus.CreateOrUpdateMenuRequestData) => {
 
 // 删除
 const deleteBtn = async (id: number) => {
-  await deleteMenuApi(id)
-  ElMessage({ message: "删除成功", type: "success" })
+ const res= await deleteMenuApi(id)
+  ElMessage({ message: res.msg, type: "success" })
   await getMenusTree()
 }
 // 搜索按钮

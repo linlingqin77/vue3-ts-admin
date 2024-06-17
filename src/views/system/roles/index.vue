@@ -1,9 +1,9 @@
 <script lang="ts" setup>
 import { ref, reactive, unref, nextTick, onMounted } from "vue"
-import { getPositionListApi, deletePositionApi } from "@/api/system/positions"
+import { addRoleApi, deleteRoleApi, updateRoleApi, getRoleListApi } from '@/api/system/roles'
 import AddUpdateDialog from "./components/add-update-dialog.vue"
-import * as Position from '@/api/system/positions/types'
-import { IdialogProps, IdialogTitle, IdialogType, IdialogData } from "./types/index"
+import * as Role from '@/api/system/roles/types'
+import { IdialogTitle, IdialogType, IdialogData } from "./types/index"
 import { ElMessage, TableInstance, ClickOutside as vClickOutside } from "element-plus"
 
 
@@ -14,15 +14,8 @@ const searchFormData = reactive({
     pageSize: 10,
     total: 0
 })
-const dialogTitle = ref<IdialogTitle>("新增岗位")
-const dialogData = ref<IdialogData>({
-    id: 0,
-    name: "",
-    order: 0,
-    code: '',
-    status: "0",
-    remark: ""
-})
+const dialogTitle = ref<IdialogTitle>("新增角色")
+const dialogData = ref<IdialogData>()
 const dialogType = ref<IdialogType>("add")
 const showAddUpdateDialog = ref(false)
 const statusOptions = [
@@ -30,7 +23,7 @@ const statusOptions = [
     { label: "停用", value: 1 }
 ]
 
-const tableData = ref<Position.IPosition[]>([])
+const tableData = ref<Role.IRole[]>([])
 const tableRef = ref<TableInstance>()
 const tableSelection = ref()
 const isTableExpand = ref<boolean>(true) //是否展开
@@ -46,13 +39,13 @@ const isTableExpand = ref<boolean>(true) //是否展开
 // 分页
 const handlePageSizeChange = async (val: number) => {
     searchFormData.pageSize = val
-    await getPositionsList()
+    await getRolesList()
     console.log(val, "val");
 
 }
 const handleCurrentChange = async (val: number) => {
     searchFormData.page = val
-    await getPositionsList()
+    await getRolesList()
     console.log(val, "val");
 }
 
@@ -61,10 +54,10 @@ const isShowSearchForm = ref<boolean>(true)
 
 // 获取数据
 const tableLoad = ref<boolean>(false)
-const getPositionsList = async () => {
+const getRolesList = async () => {
     try {
         tableLoad.value = true
-        const res = await getPositionListApi(searchFormData)
+        const res = await getRoleListApi(searchFormData)
         tableLoad.value = false
         searchFormData.total = res.data.total
         console.log(res, 'res');
@@ -77,66 +70,65 @@ const getPositionsList = async () => {
 
 
 // 修改start
-const editBtn = (val: Position.IPosition) => {
-    dialogTitle.value = "编辑岗位"
+const editBtn = (val: Role.IRole) => {
+    dialogTitle.value = "编辑角色"
     dialogType.value = "edit"
     showAddUpdateDialog.value = true
-    nextTick(() => {
-        dialogData.value = Object.assign(dialogData.value, val)
-    })
+    dialogData.value = val
+
 }
 
-// 新增岗位
+// 新增角色
 const addBtn = () => {
-    dialogTitle.value = "新增岗位"
+    dialogTitle.value = "新增角色"
     dialogType.value = "add"
     showAddUpdateDialog.value = true
-    nextTick(() => {
-        dialogData.value = Object.assign(dialogData.value, {
-            id: 0,
-            name: "",
-            order: 0,
-            code: '',
-            status: "0",
-            remark: ""
-        })
-    })
+    dialogData.value = {
+        id: 0,
+        name: "",
+        order: 0,
+        code: '',
+        status: "0",
+        notes: "",
+        menus_ids: []
+    }
+
 
 }
 // 删除
 const deleteBtn = async (id: number | number[]) => {
-    if (!id) return ElMessage.error("请选择要删除的岗位")
-    const res = await deletePositionApi(id)
+    if (!id) return ElMessage.error("请选择要删除的角色")
+    const res = await deleteRoleApi(id)
     ElMessage({ message: res.msg, type: "success" })
-    await getPositionsList()
+    await getRolesList()
 }
 // 批量删除
 // 搜索按钮
 const searchBtn = async () => {
     searchFormData.page = 1
-    await getPositionsList()
+    await getRolesList()
     console.log("submit!")
 }
 // 重置按钮
 const resetSearch = async () => {
     searchFormData.name = ""
     searchFormData.status = ""
-    await getPositionsList()
+    await getRolesList()
     console.log("reset!")
 }
 
 
 // 表格多选
-const handleSelectionChange = async (selection: Position.IPosition[]) => {
+const handleSelectionChange = async (selection: Role.IRole[]) => {
     console.log(selection, 'selection')
     tableSelection.value = selection.map(item => item.id)
 }
 // 表格列筛选
 const tableColumns = ref([
-    { label: "岗位编号", prop: "id", key: "id", visible: true, align: "center" },
-    { label: "岗位编码", prop: "code", key: "code", visible: true, align: "center" },
-    { label: "岗位名称", prop: "name", key: "name", visible: true, align: "center" },
-    { label: "岗位排序", prop: "order", key: "order", visible: true, align: "center" },
+    { label: "角色编号", prop: "id", key: "id", visible: true, align: "center" },
+    { label: "角色编码", prop: "code", key: "code", visible: true, align: "center" },
+    { label: "角色名称", prop: "name", key: "name", visible: true, align: "center" },
+    { label: "角色排序", prop: "order", key: "order", visible: true, align: "center" },
     { label: "状态", prop: "status", key: 'slot', visible: true, align: "center" },
     { label: "创建时间", prop: "create_time", key: 'create_time', visible: true, align: "center" }])
 const tableColumnsRef = ref()
@@ -155,7 +147,7 @@ const showTableColumns = () => {
     unref(tableColumnsPopoverRef).popperRef?.delayHide?.()
 }
 onMounted(() => {
-    getPositionsList()
+    getRolesList()
 })
 
 
@@ -167,13 +159,13 @@ onMounted(() => {
             <el-form :model="searchFormData" class="demo-form-inline" label-width="auto" v-show="isShowSearchForm">
                 <el-row align="middle">
                     <el-col :xs="24" :sm="12" :md="8" :lg="6" :xl="4.8">
-                        <el-form-item label="岗位名称" prop="name">
-                            <el-input v-model="searchFormData.name" placeholder="请输入岗位名称" clearable></el-input>
+                        <el-form-item label="角色名称" prop="name">
+                            <el-input v-model="searchFormData.name" placeholder="请输入角色名称" clearable></el-input>
                         </el-form-item>
                     </el-col>
                     <el-col :xs="24" :sm="12" :md="8" :lg="6" :xl="4.8">
                         <el-form-item label="状态">
-                            <el-select v-model="searchFormData.status" placeholder="岗位状态" clearable>
+                            <el-select v-model="searchFormData.status" placeholder="角色状态" clearable>
                                 <el-option v-for="item in statusOptions" :key="item.value" :label="item.label"
                                     :value="item.value" />
                             </el-select>
@@ -198,7 +190,7 @@ onMounted(() => {
                 </div>
                 <div class="flex justify-between">
                     <el-button icon="Search" circle @click="isShowSearchForm = !isShowSearchForm" />
-                    <el-button icon="Refresh" circle @click="getPositionsList" />
+                    <el-button icon="Refresh" circle @click="getRolesList" />
                     <el-tooltip class="item" effect="dark" content="显隐列" placement="top">
                         <el-button circle icon="Menu" ref="tableColumnsRef" v-click-outside="showTableColumns" />
                     </el-tooltip>
@@ -225,7 +217,7 @@ onMounted(() => {
                         <template #default="scope">
                             <el-tag :type="scope.row.status == 0 ? 'success' : 'danger'">{{
                                 scope.row.status == 0 ? "正常" : "停用"
-                                }}</el-tag>
+                            }}</el-tag>
                         </template>
                     </el-table-column>
                 </template>
@@ -251,7 +243,7 @@ onMounted(() => {
         </el-card>
 
         <AddUpdateDialog v-model:visible="showAddUpdateDialog" :title="dialogTitle" :data="dialogData"
-            :type="dialogType" @add="getPositionsList" @edit="getPositionsList" />
+            :type="dialogType" @add="getRolesList" @edit="getRolesList" />
     </div>
 </template>
 

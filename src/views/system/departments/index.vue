@@ -126,8 +126,8 @@ const addChildrenBtn = (val: Department.UpdateDepartmentRequestData) => {
 
 // 删除
 const deleteBtn = async (id: number) => {
-    await deleteDepartmentApi(id)
-    ElMessage({ message: "删除成功", type: "success" })
+    const res = await deleteDepartmentApi(id)
+    ElMessage({ message: res.msg, type: "success" })
     await getDepartmentsTree()
 }
 // 搜索按钮
@@ -232,7 +232,7 @@ getDepartmentsTree()
                         <template #default="scope">
                             <el-tag :type="scope.row.status == 0 ? 'success' : 'danger'">{{
                                 scope.row.status == 0 ? "正常" : "停用"
-                                }}</el-tag>
+                            }}</el-tag>
                         </template>
                     </el-table-column>
 

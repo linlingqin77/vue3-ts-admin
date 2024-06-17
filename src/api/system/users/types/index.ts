@@ -1,3 +1,6 @@
+import { IDepartment } from "../../departments/types"
+import { IRole } from "../../roles/types"
+import { IPosition } from "../../positions/types"
 export interface IUser {
   id: number
   sex: string
@@ -6,17 +9,20 @@ export interface IUser {
   nickname: string
   username: string
   password: string
-  // avatar: string
-  remarks: string
-  // website: string
+  notes: string
   status: string
-  // is_subscribe: string
-  position_id: number
-  department_id: number
-  role_ids: number[]
+  department: IDepartment
+  roles: IRole[]
+  positions: IPosition[]
 }
 
-export interface CreateOrUpdateUserRequestData extends Partial<IUser> {}
+export interface CreateOrUpdateUserRequestParmas
+  extends Omit<Partial<IUser>, "department" | "roles" | "positions" | "id"> {
+  id?: number
+  position_ids?: number[]
+  department_id?: number
+  role_ids?: number[]
+}
 
 export type GetUserListResponseData = ApiResponseData<{
   list: IUser[]
